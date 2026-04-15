@@ -1,0 +1,91 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: questdb
+  labels:
+    app: questdb
+    component: infrastructure
+spec:
+  selector:
+    app: questdb
+  ports:
+    - name: http
+      port: 9000
+      targetPort: 9000
+      protocol: TCP
+    - name: pgwire
+      port: 8812
+      targetPort: 8812
+      protocol: TCP
+    - name: ilp-tcp
+      port: 9009
+      targetPort: 9009
+      protocol: TCP
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: questdb
+  labels:
+    app: questdb
+    component: infrastructure
+spec:
+  serviceName: questdb
+  replicas: 1
+  selector:
+    matchLabels:
+      app: questdb
+  template:
+    metadata:
+      labels:
+        app: questdb
+        component: infrastructure
+    spec:
+      containers:
+        - name: questdb
+          image: questdb/questdb:8.2.1
+          ports:
+            - name: http
+              containerPort: 9000
+            - name: pgwire
+              containerPort: 8812
+            - name: ilp-tcp
+              containerPort: 9009
+          env:
+            - name: QDB_HTTP_ENABLED
+              value: "true"
+            - name: QDB_PG_ENABLED
+              value: "true"
+            - name: QDB_LINE_TCP_ENABLED
+              value: "true"
+          volumeMounts:
+            - name: questdb-data
+              mountPath: /var/lib/questdb
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "2Gi"
+              cpu: "1000m"
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 9000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 9000
+            initialDelaySeconds: 30
+            periodSeconds: 30
+  volumeClaimTemplates:
+    - metadata:
+        name: questdb-data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 10Gi

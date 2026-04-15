@@ -1,0 +1,959 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-datasources
+  labels:
+    app: grafana
+    component: infrastructure
+data:
+  prometheus.yml: |
+    apiVersion: 1
+    datasources:
+      - name: Prometheus
+        type: prometheus
+        access: proxy
+        url: http://prometheus:9090
+        isDefault: true
+        editable: false
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-providers
+  labels:
+    app: grafana
+    component: infrastructure
+data:
+  default.yml: |
+    apiVersion: 1
+    providers:
+      - name: default
+        orgId: 1
+        folder: ""
+        type: file
+        disableDeletion: false
+        editable: true
+        options:
+          path: /opt/grafana/dashboards
+          foldersFromFilesStructure: false
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboards
+  labels:
+    app: grafana
+    component: infrastructure
+data:
+  2apollo-overview.json: |
+    {
+      "uid": "2apollo-overview",
+      "title": "2Apollo Overview",
+      "tags": ["2apollo"],
+      "timezone": "browser",
+      "refresh": "15s",
+      "time": { "from": "now-6h", "to": "now" },
+      "templating": {
+        "list": [
+          {
+            "name": "portfolio",
+            "type": "custom",
+            "current": { "text": "All", "value": "$__all" },
+            "options": [
+              { "text": "All", "value": "$__all", "selected": true },
+              { "text": "crypto", "value": "crypto", "selected": false }
+            ],
+            "query": "crypto",
+            "includeAll": true,
+            "multi": false
+          }
+        ]
+      },
+      "panels": [
+        {
+          "id": 1,
+          "title": "Service Health",
+          "type": "stat",
+          "gridPos": { "h": 4, "w": 24, "x": 0, "y": 0 },
+          "targets": [{ "expr": "up", "legendFormat": "{{job}}" }],
+          "fieldConfig": {
+            "defaults": {
+              "mappings": [{ "type": "value", "options": { "0": { "text": "DOWN", "color": "red" }, "1": { "text": "UP", "color": "green" } } }],
+              "thresholds": { "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] }
+            }
+          },
+          "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "none" }
+        },
+
+        {
+          "id": 100,
+          "title": "Strategy",
+          "type": "row",
+          "gridPos": { "h": 1, "w": 24, "x": 0, "y": 4 },
+          "collapsed": false
+        },
+        {
+          "id": 2,
+          "title": "Active Positions",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 5 },
+          "targets": [{ "expr": "analyst_active_positions", "legendFormat": "{{job}}" }],
+          "fieldConfig": { "defaults": { "custom": { "fillOpacity": 20 } } }
+        },
+        {
+          "id": 3,
+          "title": "Buy / Sell Rate (per minute)",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 13 },
+          "targets": [
+            { "expr": "rate(analyst_cycle_buys_total[5m]) * 60", "legendFormat": "{{job}} buys/min" },
+            { "expr": "rate(analyst_cycle_sells_total[5m]) * 60", "legendFormat": "{{job}} sells/min" }
+          ],
+          "fieldConfig": { "defaults": { "custom": { "fillOpacity": 10 } } }
+        },
+        {
+          "id": 5,
+          "title": "Rebalance Cycles (per minute)",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 13 },
+          "targets": [{ "expr": "rate(analyst_rebalance_cycles_total[5m]) * 60", "legendFormat": "{{job}}" }],
+          "fieldConfig": { "defaults": { "custom": { "fillOpacity": 10 } } }
+        },
+        {
+          "id": 4,
+          "title": "Rebalance Cycle Duration (seconds)",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 21 },
+          "targets": [{ "expr": "analyst_rebalance_cycle_duration_seconds", "legendFormat": "{{job}}" }],
+          "fieldConfig": { "defaults": { "unit": "s", "custom": { "fillOpacity": 10 } } }
+        },
+        {
+          "id": 101,
+          "title": "Data Collectors",
+          "type": "row",
+          "gridPos": { "h": 1, "w": 24, "x": 0, "y": 29 },
+          "collapsed": false
+        },
+        {
+          "id": 6,
+          "title": "Bars Inserted (per minute)",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 8, "x": 0, "y": 30 },
+          "targets": [{ "expr": "rate(collector_bars_inserted_total[5m]) * 60", "legendFormat": "{{job}}" }]
+        },
+        {
+          "id": 9,
+          "title": "Watchlist Size",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 8, "x": 16, "y": 30 },
+          "targets": [{ "expr": "collector_watchlist_size", "legendFormat": "{{job}}" }]
+        },
+        {
+          "id": 7,
+          "title": "API Errors (per minute)",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 38 },
+          "targets": [{ "expr": "rate(collector_api_errors_total[5m]) * 60", "legendFormat": "{{job}}" }],
+          "fieldConfig": { "defaults": { "color": { "mode": "fixed", "fixedColor": "red" }, "custom": { "fillOpacity": 20 } } }
+        },
+        {
+          "id": 8,
+          "title": "Cycle Duration (seconds)",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 38 },
+          "targets": [{ "expr": "collector_cycle_duration_seconds", "legendFormat": "{{job}}" }],
+          "fieldConfig": { "defaults": { "unit": "s", "custom": { "fillOpacity": 10 } } }
+        },
+
+        {
+          "id": 102,
+          "title": "Traders",
+          "type": "row",
+          "gridPos": { "h": 1, "w": 24, "x": 0, "y": 46 },
+          "collapsed": false
+        },
+        {
+          "id": 10,
+          "title": "Buys Attempted vs Succeeded",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 47 },
+          "targets": [
+            { "expr": "rate(trader_buys_attempted_total[5m]) * 60", "legendFormat": "{{job}} attempted/min" },
+            { "expr": "rate(trader_buys_succeeded_total[5m]) * 60", "legendFormat": "{{job}} succeeded/min" }
+          ],
+          "fieldConfig": { "defaults": { "custom": { "fillOpacity": 10 } } }
+        },
+        {
+          "id": 11,
+          "title": "Sells Attempted vs Succeeded",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 47 },
+          "targets": [
+            { "expr": "rate(trader_sells_attempted_total[5m]) * 60", "legendFormat": "{{job}} attempted/min" },
+            { "expr": "rate(trader_sells_succeeded_total[5m]) * 60", "legendFormat": "{{job}} succeeded/min" }
+          ],
+          "fieldConfig": { "defaults": { "custom": { "fillOpacity": 10 } } }
+        },
+        {
+          "id": 12,
+          "title": "Trader Errors (per minute)",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 55 },
+          "targets": [
+            { "expr": "rate(trader_errors_total[5m]) * 60", "legendFormat": "{{job}}" }
+          ],
+          "fieldConfig": { "defaults": { "color": { "mode": "fixed", "fixedColor": "red" }, "custom": { "fillOpacity": 20 } } }
+        },
+        {
+          "id": 13,
+          "title": "Message Latency (seconds)",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 24, "x": 0, "y": 63 },
+          "targets": [{ "expr": "trader_message_latency_seconds", "legendFormat": "{{job}}" }],
+          "fieldConfig": { "defaults": { "unit": "s", "custom": { "fillOpacity": 10 } } }
+        },
+        {
+          "id": 22,
+          "title": "Active Users",
+          "type": "stat",
+          "gridPos": { "h": 4, "w": 6, "x": 0, "y": 71 },
+          "targets": [{ "expr": "trader_active_users", "legendFormat": "{{job}}" }],
+          "fieldConfig": {
+            "defaults": {
+              "thresholds": { "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] }
+            }
+          },
+          "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "none" }
+        },
+        {
+          "id": 23,
+          "title": "Token Refreshes",
+          "type": "timeseries",
+          "gridPos": { "h": 4, "w": 6, "x": 6, "y": 71 },
+          "targets": [{ "expr": "rate(trader_token_refreshes_total[5m]) * 60", "legendFormat": "refreshes/min" }],
+          "fieldConfig": { "defaults": { "custom": { "fillOpacity": 10 } } }
+        },
+        {
+          "id": 24,
+          "title": "Token Refresh Errors",
+          "type": "timeseries",
+          "gridPos": { "h": 4, "w": 6, "x": 12, "y": 71 },
+          "targets": [{ "expr": "rate(trader_token_refresh_errors_total[5m]) * 60", "legendFormat": "errors/min" }],
+          "fieldConfig": { "defaults": { "color": { "mode": "fixed", "fixedColor": "red" }, "custom": { "fillOpacity": 20 } } }
+        },
+        {
+          "id": 25,
+          "title": "Discovery Errors",
+          "type": "stat",
+          "gridPos": { "h": 4, "w": 6, "x": 18, "y": 71 },
+          "targets": [{ "expr": "trader_user_discovery_errors", "legendFormat": "{{job}}" }],
+          "fieldConfig": {
+            "defaults": {
+              "thresholds": { "steps": [{ "color": "green", "value": null }, { "color": "red", "value": 1 }] }
+            }
+          },
+          "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "none" }
+        },
+
+        {
+          "id": 103,
+          "title": "Unrealized P&L",
+          "type": "row",
+          "gridPos": { "h": 1, "w": 24, "x": 0, "y": 75 },
+          "collapsed": false
+        },
+        {
+          "id": 14,
+          "title": "Crypto Unrealized P&L",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 8, "x": 0, "y": 76 },
+          "targets": [{ "expr": "analyst_position_unrealized_pnl{job=\"crypto-trader\"}", "legendFormat": "{{symbol}} (slot {{slot_id}})" }],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percentunit",
+              "custom": { "fillOpacity": 10, "gradientMode": "scheme" },
+              "thresholds": { "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 0 }] },
+              "color": { "mode": "thresholds" }
+            }
+          }
+        },
+
+        {
+          "id": 104,
+          "title": "Open Positions",
+          "type": "row",
+          "gridPos": { "h": 1, "w": 24, "x": 0, "y": 84 },
+          "collapsed": false
+        },
+        {
+          "id": 16,
+          "title": "Crypto Positions",
+          "type": "table",
+          "gridPos": { "h": 10, "w": 12, "x": 0, "y": 85 },
+          "targets": [
+            { "expr": "analyst_position_entry_price{job=\"crypto-trader\"}", "instant": true, "format": "table", "refId": "A" },
+            { "expr": "analyst_position_current_price{job=\"crypto-trader\"}", "instant": true, "format": "table", "refId": "B" },
+            { "expr": "analyst_position_unrealized_pnl{job=\"crypto-trader\"}", "instant": true, "format": "table", "refId": "C" },
+            { "expr": "analyst_position_bars_held{job=\"crypto-trader\"}", "instant": true, "format": "table", "refId": "D" }
+          ],
+          "transformations": [
+            {
+              "id": "filterFieldsByName",
+              "options": {
+                "include": {
+                  "pattern": "^(symbol|slot_id|Value .*)$"
+                }
+              }
+            },
+            { "id": "merge" },
+            {
+              "id": "organize",
+              "options": {
+                "renameByName": {
+                  "symbol": "Symbol",
+                  "slot_id": "Slot",
+                  "Value #A": "Entry Price",
+                  "Value #B": "Current Price",
+                  "Value #C": "Unrealized PnL",
+                  "Value #D": "Bars Held"
+                },
+                "indexByName": {
+                  "Symbol": 0,
+                  "Slot": 1,
+                  "Entry Price": 2,
+                  "Current Price": 3,
+                  "Unrealized PnL": 4,
+                  "Bars Held": 5
+                }
+              }
+            }
+          ],
+          "fieldConfig": {
+            "overrides": [
+              {
+                "matcher": { "id": "byName", "options": "Unrealized PnL" },
+                "properties": [
+                  { "id": "unit", "value": "percentunit" },
+                  { "id": "decimals", "value": 2 },
+                  { "id": "custom.cellOptions", "value": { "type": "color-background" } },
+                  { "id": "color", "value": { "mode": "thresholds" } },
+                  { "id": "thresholds", "value": { "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 0 }] } }
+                ]
+              },
+              {
+                "matcher": { "id": "byName", "options": "Entry Price" },
+                "properties": [{ "id": "unit", "value": "currencyUSD" }, { "id": "decimals", "value": 2 }]
+              },
+              {
+                "matcher": { "id": "byName", "options": "Current Price" },
+                "properties": [{ "id": "unit", "value": "currencyUSD" }, { "id": "decimals", "value": 2 }]
+              }
+            ]
+          }
+        },
+
+        {
+          "id": 105,
+          "title": "Momentum & Signals",
+          "type": "row",
+          "gridPos": { "h": 1, "w": 24, "x": 0, "y": 95 },
+          "collapsed": false
+        },
+        {
+          "id": 18,
+          "title": "Crypto Momentum Scores",
+          "type": "table",
+          "gridPos": { "h": 10, "w": 12, "x": 0, "y": 96 },
+          "targets": [
+            { "expr": "analyst_symbol_momentum_score{job=\"crypto-trader\"}", "instant": true, "format": "table", "refId": "A" },
+            { "expr": "analyst_symbol_trend_ok{job=\"crypto-trader\"}", "instant": true, "format": "table", "refId": "B" }
+          ],
+          "transformations": [
+            {
+              "id": "filterFieldsByName",
+              "options": {
+                "include": {
+                  "pattern": "^(symbol|Value .*)$"
+                }
+              }
+            },
+            { "id": "merge" },
+            {
+              "id": "organize",
+              "options": {
+                "renameByName": {
+                  "symbol": "Symbol",
+                  "Value #A": "Momentum Score",
+                  "Value #B": "Trend OK"
+                },
+                "indexByName": {
+                  "Symbol": 0,
+                  "Momentum Score": 1,
+                  "Trend OK": 2
+                }
+              }
+            },
+            {
+              "id": "sortBy",
+              "options": { "sort": [{ "field": "Momentum Score", "desc": true }] }
+            }
+          ],
+          "fieldConfig": {
+            "defaults": { "decimals": 4 },
+            "overrides": [
+              {
+                "matcher": { "id": "byName", "options": "Momentum Score" },
+                "properties": [
+                  { "id": "custom.cellOptions", "value": { "type": "color-background" } },
+                  { "id": "color", "value": { "mode": "thresholds" } },
+                  { "id": "thresholds", "value": { "steps": [{ "color": "red", "value": null }, { "color": "yellow", "value": 0 }, { "color": "blue", "value": 0.01 }] } }
+                ]
+              },
+              {
+                "matcher": { "id": "byName", "options": "Trend OK" },
+                "properties": [
+                  { "id": "decimals", "value": 0 },
+                  { "id": "mappings", "value": [{ "type": "value", "options": { "0": { "text": "NO", "color": "red" }, "1": { "text": "YES", "color": "green" } } }] },
+                  { "id": "custom.cellOptions", "value": { "type": "color-background" } },
+                  { "id": "color", "value": { "mode": "thresholds" } },
+                  { "id": "thresholds", "value": { "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] } }
+                ]
+              }
+            ]
+          }
+        },
+
+        {
+          "id": 106,
+          "title": "Data Freshness",
+          "type": "row",
+          "gridPos": { "h": 1, "w": 24, "x": 0, "y": 114 },
+          "collapsed": false
+        },
+        {
+          "id": 20,
+          "title": "Crypto Data Freshness",
+          "description": "How old each symbol's latest bar is (in minutes), sorted by age.",
+          "type": "table",
+          "gridPos": { "h": 8, "w": 8, "x": 0, "y": 115 },
+          "targets": [{ "expr": "(time() - analyst_symbol_last_bar_ts{job=\"crypto-trader\"}) / 60", "instant": true, "format": "table", "refId": "A" }],
+          "transformations": [
+            {
+              "id": "organize",
+              "options": {
+                "excludeByName": { "Time": true, "__name__": true, "instance": true, "job": true },
+                "renameByName": { "symbol": "Symbol", "Value": "Data Age (min)" }
+              }
+            },
+            {
+              "id": "sortBy",
+              "options": { "sort": [{ "field": "Data Age (min)", "desc": false }] }
+            }
+          ],
+          "fieldConfig": {
+            "defaults": { "decimals": 0 },
+            "overrides": [
+              {
+                "matcher": { "id": "byName", "options": "Data Age (min)" },
+                "properties": [
+                  { "id": "unit", "value": "m" },
+                  { "id": "custom.cellOptions", "value": { "type": "color-background" } },
+                  { "id": "color", "value": { "mode": "thresholds" } },
+                  { "id": "thresholds", "value": { "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 30 }, { "color": "red", "value": 60 }] } }
+                ]
+              }
+            ]
+          }
+        },
+
+        {
+          "id": 107,
+          "title": "Order Slippage",
+          "type": "row",
+          "gridPos": { "h": 1, "w": 24, "x": 0, "y": 123 },
+          "collapsed": false
+        },
+        {
+          "id": 27,
+          "title": "Crypto Order Slippage",
+          "description": "Fill price minus strategy entry price per symbol. Positive = paid more than expected.",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 124 },
+          "targets": [{ "expr": "trader_order_slippage{job=\"crypto-trader\"}", "legendFormat": "{{symbol}}" }],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "currencyUSD",
+              "decimals": 4,
+              "custom": { "fillOpacity": 10, "gradientMode": "scheme", "lineWidth": 2 },
+              "thresholds": { "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 0 }, { "color": "red", "value": 0.01 }] },
+              "color": { "mode": "thresholds" }
+            }
+          }
+        }
+      ],
+      "schemaVersion": 39
+    }
+  price-ema.json: |
+    {
+      "uid": "price-ema",
+      "title": "Price & EMA",
+      "tags": ["2apollo"],
+      "timezone": "browser",
+      "refresh": "30s",
+      "time": { "from": "now-24h", "to": "now" },
+      "templating": {
+        "list": [
+          {
+            "name": "portfolio",
+            "type": "custom",
+            "label": "Portfolio",
+            "current": { "text": "crypto", "value": "crypto" },
+            "options": [
+              { "text": "crypto", "value": "crypto", "selected": true }
+            ],
+            "query": "crypto",
+            "includeAll": false,
+            "multi": false
+          },
+          {
+            "name": "symbol",
+            "type": "query",
+            "label": "Symbol",
+            "datasource": "Prometheus",
+            "query": "label_values(analyst_symbol_price{job=\"${portfolio}-strategy\"}, symbol)",
+            "refresh": 2,
+            "sort": 1,
+            "includeAll": false,
+            "multi": false
+          }
+        ]
+      },
+      "panels": [
+        {
+          "id": 1,
+          "title": "Price & EMA — ${symbol}",
+          "type": "timeseries",
+          "gridPos": { "h": 16, "w": 24, "x": 0, "y": 0 },
+          "targets": [
+            { "expr": "analyst_symbol_price{job=\"${portfolio}-strategy\", symbol=\"${symbol}\"}", "legendFormat": "Close Price", "refId": "A" },
+            { "expr": "analyst_symbol_fast_ema{job=\"${portfolio}-strategy\", symbol=\"${symbol}\"}", "legendFormat": "Fast EMA", "refId": "B" },
+            { "expr": "analyst_symbol_slow_ema{job=\"${portfolio}-strategy\", symbol=\"${symbol}\"}", "legendFormat": "Slow EMA", "refId": "C" }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "currencyUSD",
+              "custom": {
+                "lineWidth": 2,
+                "fillOpacity": 0,
+                "pointSize": 3,
+                "spanNulls": true
+              }
+            },
+            "overrides": [
+              {
+                "matcher": { "id": "byName", "options": "Close Price" },
+                "properties": [
+                  { "id": "color", "value": { "mode": "fixed", "fixedColor": "white" } },
+                  { "id": "custom.lineWidth", "value": 1 }
+                ]
+              },
+              {
+                "matcher": { "id": "byName", "options": "Fast EMA" },
+                "properties": [
+                  { "id": "color", "value": { "mode": "fixed", "fixedColor": "green" } }
+                ]
+              },
+              {
+                "matcher": { "id": "byName", "options": "Slow EMA" },
+                "properties": [
+                  { "id": "color", "value": { "mode": "fixed", "fixedColor": "red" } }
+                ]
+              }
+            ]
+          },
+          "options": {
+            "tooltip": { "mode": "multi", "sort": "none" },
+            "legend": { "displayMode": "list", "placement": "bottom" }
+          }
+        },
+        {
+          "id": 2,
+          "title": "Trend Status — ${symbol}",
+          "type": "stat",
+          "gridPos": { "h": 4, "w": 8, "x": 0, "y": 16 },
+          "targets": [{ "expr": "analyst_symbol_trend_ok{job=\"${portfolio}-strategy\", symbol=\"${symbol}\"}", "legendFormat": "Trend OK" }],
+          "fieldConfig": {
+            "defaults": {
+              "mappings": [{ "type": "value", "options": { "0": { "text": "BEARISH", "color": "red" }, "1": { "text": "BULLISH", "color": "green" } } }],
+              "thresholds": { "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] }
+            }
+          },
+          "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "none" }
+        },
+        {
+          "id": 3,
+          "title": "Momentum Score — ${symbol}",
+          "type": "stat",
+          "gridPos": { "h": 4, "w": 8, "x": 8, "y": 16 },
+          "targets": [{ "expr": "analyst_symbol_momentum_score{job=\"${portfolio}-strategy\", symbol=\"${symbol}\"}", "legendFormat": "Momentum" }],
+          "fieldConfig": {
+            "defaults": {
+              "decimals": 3,
+              "thresholds": { "steps": [{ "color": "red", "value": null }, { "color": "yellow", "value": 0 }, { "color": "green", "value": 3 }] }
+            }
+          },
+          "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "area" }
+        },
+        {
+          "id": 4,
+          "title": "Position Held — ${symbol}",
+          "type": "stat",
+          "gridPos": { "h": 4, "w": 8, "x": 16, "y": 16 },
+          "targets": [{ "expr": "analyst_symbol_held{job=\"${portfolio}-strategy\", symbol=\"${symbol}\"}", "legendFormat": "Held" }],
+          "fieldConfig": {
+            "defaults": {
+              "mappings": [{ "type": "value", "options": { "0": { "text": "NO", "color": "blue" }, "1": { "text": "YES", "color": "orange" } } }],
+              "thresholds": { "steps": [{ "color": "blue", "value": null }, { "color": "orange", "value": 1 }] }
+            }
+          },
+          "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "none" }
+        }
+      ],
+      "schemaVersion": 39
+    }
+  hpt-llm.json: |
+    {
+      "uid": "hpt-llm",
+      "title": "HPT LLM",
+      "tags": ["2apollo", "llm"],
+      "timezone": "browser",
+      "refresh": "30s",
+      "time": { "from": "now-24h", "to": "now" },
+      "panels": [
+        {
+          "id": 1,
+          "title": "Service Health",
+          "type": "stat",
+          "gridPos": { "h": 4, "w": 4, "x": 0, "y": 0 },
+          "targets": [{ "expr": "up{job=\"hpt-llm\"}", "legendFormat": "hpt-llm" }],
+          "fieldConfig": {
+            "defaults": {
+              "mappings": [{ "type": "value", "options": { "0": { "text": "DOWN", "color": "red" }, "1": { "text": "UP", "color": "green" } } }],
+              "thresholds": { "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] }
+            }
+          },
+          "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "none" }
+        },
+        {
+          "id": 2,
+          "title": "Slack Messages (per minute)",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 10, "x": 4, "y": 0 },
+          "targets": [
+            { "expr": "rate(llm_slack_messages_total[5m]) * 60", "legendFormat": "{{type}}" }
+          ],
+          "fieldConfig": { "defaults": { "custom": { "fillOpacity": 20 } } }
+        },
+        {
+          "id": 3,
+          "title": "Slack Errors",
+          "type": "stat",
+          "gridPos": { "h": 4, "w": 4, "x": 14, "y": 0 },
+          "targets": [{ "expr": "llm_slack_response_errors_total", "legendFormat": "errors" }],
+          "fieldConfig": {
+            "defaults": {
+              "thresholds": { "steps": [{ "color": "green", "value": null }, { "color": "red", "value": 1 }] }
+            }
+          },
+          "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "none" }
+        },
+        {
+          "id": 4,
+          "title": "Theory Runs",
+          "type": "stat",
+          "gridPos": { "h": 4, "w": 3, "x": 18, "y": 0 },
+          "targets": [{ "expr": "llm_theory_runs_total", "legendFormat": "runs" }],
+          "fieldConfig": {
+            "defaults": {
+              "thresholds": { "steps": [{ "color": "blue", "value": null }] }
+            }
+          },
+          "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "none" }
+        },
+        {
+          "id": 5,
+          "title": "Do Not Trade",
+          "type": "stat",
+          "gridPos": { "h": 4, "w": 3, "x": 21, "y": 0 },
+          "targets": [{ "expr": "llm_theory_do_not_trade", "legendFormat": "do_not_trade" }],
+          "fieldConfig": {
+            "defaults": {
+              "mappings": [{ "type": "value", "options": { "0": { "text": "TRADE", "color": "green" }, "1": { "text": "DO NOT TRADE", "color": "red" } } }],
+              "thresholds": { "steps": [{ "color": "green", "value": null }, { "color": "red", "value": 1 }] }
+            }
+          },
+          "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "none" }
+        },
+        {
+          "id": 6,
+          "title": "Ollama Call Rate (per minute)",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+          "targets": [
+            { "expr": "rate(llm_ollama_calls_total[5m]) * 60", "legendFormat": "calls/min" }
+          ],
+          "fieldConfig": { "defaults": { "custom": { "fillOpacity": 10 } } }
+        },
+        {
+          "id": 7,
+          "title": "Ollama Call Duration (seconds)",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+          "targets": [{ "expr": "llm_ollama_call_duration_seconds", "legendFormat": "duration" }],
+          "fieldConfig": { "defaults": { "unit": "s", "custom": { "fillOpacity": 10 } } }
+        },
+        {
+          "id": 8,
+          "title": "Ollama Errors",
+          "type": "stat",
+          "gridPos": { "h": 4, "w": 6, "x": 0, "y": 16 },
+          "targets": [{ "expr": "llm_ollama_errors_total", "legendFormat": "errors" }],
+          "fieldConfig": {
+            "defaults": {
+              "thresholds": { "steps": [{ "color": "green", "value": null }, { "color": "red", "value": 1 }] }
+            }
+          },
+          "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "none" }
+        },
+        {
+          "id": 9,
+          "title": "Tool Calls (per minute)",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 18, "x": 6, "y": 16 },
+          "targets": [
+            { "expr": "rate(llm_tool_calls_total[5m]) * 60", "legendFormat": "{{tool}}" }
+          ],
+          "fieldConfig": { "defaults": { "custom": { "fillOpacity": 10 } } }
+        },
+        {
+          "id": 10,
+          "title": "Tool Duration (seconds)",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 24 },
+          "targets": [{ "expr": "llm_tool_duration_seconds", "legendFormat": "{{tool}}" }],
+          "fieldConfig": { "defaults": { "unit": "s", "custom": { "fillOpacity": 10 } } }
+        },
+        {
+          "id": 11,
+          "title": "Tool Errors",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 24 },
+          "targets": [{ "expr": "rate(llm_tool_errors_total[5m]) * 60", "legendFormat": "{{tool}}" }],
+          "fieldConfig": { "defaults": { "color": { "mode": "fixed", "fixedColor": "red" }, "custom": { "fillOpacity": 20 } } }
+        },
+        {
+          "id": 12,
+          "title": "Theory Pipeline Duration (seconds)",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 32 },
+          "targets": [{ "expr": "llm_theory_run_duration_seconds", "legendFormat": "duration" }],
+          "fieldConfig": { "defaults": { "unit": "s", "custom": { "fillOpacity": 10 } } }
+        },
+        {
+          "id": 13,
+          "title": "Articles Scanned",
+          "type": "stat",
+          "gridPos": { "h": 4, "w": 4, "x": 12, "y": 32 },
+          "targets": [{ "expr": "llm_theory_articles_scanned", "legendFormat": "articles" }],
+          "fieldConfig": {
+            "defaults": {
+              "thresholds": { "steps": [{ "color": "blue", "value": null }] }
+            }
+          },
+          "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "none" }
+        },
+        {
+          "id": 14,
+          "title": "Symbols Scored",
+          "type": "stat",
+          "gridPos": { "h": 4, "w": 4, "x": 16, "y": 32 },
+          "targets": [{ "expr": "llm_theory_symbols_scored", "legendFormat": "symbols" }],
+          "fieldConfig": {
+            "defaults": {
+              "thresholds": { "steps": [{ "color": "blue", "value": null }] }
+            }
+          },
+          "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "none" }
+        },
+        {
+          "id": 15,
+          "title": "Signals Published",
+          "type": "stat",
+          "gridPos": { "h": 4, "w": 4, "x": 20, "y": 32 },
+          "targets": [{ "expr": "llm_theory_signal_published_total", "legendFormat": "signals" }],
+          "fieldConfig": {
+            "defaults": {
+              "thresholds": { "steps": [{ "color": "blue", "value": null }] }
+            }
+          },
+          "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "none" }
+        },
+        {
+          "id": 16,
+          "title": "Theory Errors",
+          "type": "stat",
+          "gridPos": { "h": 4, "w": 4, "x": 12, "y": 36 },
+          "targets": [{ "expr": "llm_theory_errors_total", "legendFormat": "errors" }],
+          "fieldConfig": {
+            "defaults": {
+              "thresholds": { "steps": [{ "color": "green", "value": null }, { "color": "red", "value": 1 }] }
+            }
+          },
+          "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "none" }
+        },
+        {
+          "id": 17,
+          "title": "QuestDB Query Duration (seconds)",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 40 },
+          "targets": [{ "expr": "llm_questdb_query_duration_seconds", "legendFormat": "{{query}}" }],
+          "fieldConfig": { "defaults": { "unit": "s", "custom": { "fillOpacity": 10 } } }
+        },
+        {
+          "id": 18,
+          "title": "QuestDB Errors",
+          "type": "stat",
+          "gridPos": { "h": 4, "w": 4, "x": 12, "y": 40 },
+          "targets": [{ "expr": "llm_questdb_errors_total", "legendFormat": "errors" }],
+          "fieldConfig": {
+            "defaults": {
+              "thresholds": { "steps": [{ "color": "green", "value": null }, { "color": "red", "value": 1 }] }
+            }
+          },
+          "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "none" }
+        },
+        {
+          "id": 19,
+          "title": "Kafka Publish Errors",
+          "type": "stat",
+          "gridPos": { "h": 4, "w": 4, "x": 16, "y": 40 },
+          "targets": [{ "expr": "llm_kafka_publish_errors_total", "legendFormat": "errors" }],
+          "fieldConfig": {
+            "defaults": {
+              "thresholds": { "steps": [{ "color": "green", "value": null }, { "color": "red", "value": 1 }] }
+            }
+          },
+          "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "none" }
+        }
+      ],
+      "schemaVersion": 39
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana
+  labels:
+    app: grafana
+    component: infrastructure
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grafana
+  template:
+    metadata:
+      labels:
+        app: grafana
+        component: infrastructure
+    spec:
+      containers:
+        - name: grafana
+          image: grafana/grafana:latest
+          ports:
+            - name: http
+              containerPort: 3000
+          env:
+            - name: GF_SECURITY_ADMIN_PASSWORD
+              value: "admin"
+          volumeMounts:
+            - name: datasources
+              mountPath: /etc/grafana/provisioning/datasources/prometheus.yml
+              subPath: prometheus.yml
+            - name: dashboard-providers
+              mountPath: /etc/grafana/provisioning/dashboards/default.yml
+              subPath: default.yml
+            - name: dashboards
+              mountPath: /opt/grafana/dashboards/2apollo-overview.json
+              subPath: 2apollo-overview.json
+            - name: dashboards
+              mountPath: /opt/grafana/dashboards/price-ema.json
+              subPath: price-ema.json
+            - name: dashboards
+              mountPath: /opt/grafana/dashboards/hpt-llm.json
+              subPath: hpt-llm.json
+            - name: grafana-data
+              mountPath: /var/lib/grafana
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 30
+      volumes:
+        - name: datasources
+          configMap:
+            name: grafana-datasources
+        - name: dashboard-providers
+          configMap:
+            name: grafana-dashboard-providers
+        - name: dashboards
+          configMap:
+            name: grafana-dashboards
+        - name: grafana-data
+          persistentVolumeClaim:
+            claimName: grafana-data
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: grafana-data
+  labels:
+    app: grafana
+    component: infrastructure
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana
+  labels:
+    app: grafana
+    component: infrastructure
+spec:
+  type: NodePort
+  selector:
+    app: grafana
+  ports:
+    - name: http
+      port: 3000
+      targetPort: 3000
+      protocol: TCP

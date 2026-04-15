@@ -1,0 +1,126 @@
+{
+  "AAVE": {
+    "fast_ema": 1000,
+    "slow_ema": 1500
+  },
+  "ADA": {
+    "fast_ema": 1000,
+    "slow_ema": 1200
+  },
+  "ALGO": {
+    "fast_ema": 300,
+    "slow_ema": 2000
+  },
+  "ATOM": {
+    "fast_ema": 1000,
+    "slow_ema": 2000
+  },
+  "AVAX": {
+    "fast_ema": 500,
+    "slow_ema": 700
+  },
+  "BCH": {
+    "fast_ema": 200,
+    "slow_ema": 300
+  },
+  "BTC": {
+    "fast_ema": 1000,
+    "slow_ema": 2000
+  },
+  "DOGE": {
+    "fast_ema": 900,
+    "slow_ema": 2000
+  },
+  "DOT": {
+    "fast_ema": 1000,
+    "slow_ema": 1600
+  },
+  "ENA": {
+    "fast_ema": 100,
+    "slow_ema": 1200
+  },
+  "ETC": {
+    "fast_ema": 300,
+    "slow_ema": 400
+  },
+  "ETH": {
+    "fast_ema": 900,
+    "slow_ema": 1400
+  },
+  "ICP": {
+    "fast_ema": 300,
+    "slow_ema": 500
+  },
+  "LINK": {
+    "fast_ema": 300,
+    "slow_ema": 500
+  },
+  "LTC": {
+    "fast_ema": 700,
+    "slow_ema": 1100
+  },
+  "MNT": {
+    "fast_ema": 10,
+    "slow_ema": 400
+  },
+  "NEAR": {
+    "fast_ema": 600,
+    "slow_ema": 900
+  },
+  "ONDO": {
+    "fast_ema": 800,
+    "slow_ema": 1000
+  },
+  "PEPE": {
+    "fast_ema": 500,
+    "slow_ema": 700
+  },
+  "POL": {
+    "fast_ema": 1000,
+    "slow_ema": 2000
+  },
+  "QNT": {
+    "fast_ema": 700,
+    "slow_ema": 1700
+  },
+  "SHIB": {
+    "fast_ema": 1000,
+    "slow_ema": 2000
+  },
+  "SOL": {
+    "fast_ema": 600,
+    "slow_ema": 900
+  },
+  "SUI": {
+    "fast_ema": 1000,
+    "slow_ema": 1200
+  },
+  "TAO": {
+    "fast_ema": 50,
+    "slow_ema": 100
+  },
+  "TRX": {
+    "fast_ema": 600,
+    "slow_ema": 1100
+  },
+  "UNI": {
+    "fast_ema": 200,
+    "slow_ema": 2000
+  },
+  "XLM": {
+    "fast_ema": 200,
+    "slow_ema": 1900
+  },
+  "XMR": {
+    "fast_ema": 700,
+    "slow_ema": 2000
+  },
+  "XRP": {
+    "fast_ema": 500,
+    "slow_ema": 1100
+  },
+  "ZEC": {
+    "fast_ema": 500,
+    "slow_ema": 1400
+  }
+}

@@ -1,0 +1,113 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: crypto-trader-config
+  labels:
+    app: crypto-trader
+    portfolio: crypto
+    component: trader
+data:
+  QUESTDB_HOST: "questdb"
+  QUESTDB_PORT: "8812"
+  QUESTDB_USER: "admin"
+  QUESTDB_PASSWORD: "quest"
+  QUESTDB_DBNAME: "qdb"
+  PROMETHEUS_PORT: "9095"
+  DRY_RUN: "false"
+  CYCLE_INTERVAL: "15"
+  MAX_POSITIONS: "5"
+  SETTLEMENT_DELAY_SECONDS: "5.0"
+  POSITIONS_PATH: "/data/positions.json"
+  VERBOSE: "false"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: crypto-trader-secret
+  labels:
+    app: crypto-trader
+    portfolio: crypto
+type: Opaque
+stringData:
+  KRAKEN_API_KEY: ""
+  KRAKEN_API_SECRET: ""
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: crypto-trader
+  labels:
+    app: crypto-trader
+    portfolio: crypto
+    component: trader
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: crypto-trader
+  template:
+    metadata:
+      labels:
+        app: crypto-trader
+        portfolio: crypto
+        component: trader
+    spec:
+      containers:
+        - name: crypto-trader
+          image: northamerica-northeast2-docker.pkg.dev/home-2apollo/home-2apollo-quant/crypto-trader:latest
+          imagePullPolicy: Always
+          ports:
+            - name: metrics
+              containerPort: 9095
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: crypto-trader-config
+            - secretRef:
+                name: crypto-trader-secret
+          volumeMounts:
+            - name: data
+              mountPath: /data
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "200m"
+            limits:
+              memory: "2Gi"
+              cpu: "1000m"
+          securityContext:
+            runAsUser: 10001
+            runAsNonRoot: true
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: crypto-trader-data
+      imagePullSecrets:
+        - name: gcr-secret
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: crypto-trader-data
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: crypto-trader
+  labels:
+    app: crypto-trader
+    portfolio: crypto
+spec:
+  selector:
+    app: crypto-trader
+  ports:
+    - name: metrics
+      port: 9095
+      targetPort: 9095
+      protocol: TCP
