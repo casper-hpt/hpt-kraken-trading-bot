@@ -42,7 +42,7 @@ services:
     depends_on:
       questdb:
         condition: service_healthy
-    env_file: ./auto/.env
+    env_file: ./.env
     environment:
       QUESTDB_HOST: questdb
       QUESTDB_PORT: "8812"
