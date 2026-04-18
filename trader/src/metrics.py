@@ -10,7 +10,7 @@ from typing import Optional
 
 from prometheus_client import Counter, Gauge, start_http_server
 
-from trader.src.positions.positions_cache import CASH_SYMBOL, Position
+from src.positions.positions_cache import CASH_SYMBOL, Position
 
 log = logging.getLogger(__name__)
 

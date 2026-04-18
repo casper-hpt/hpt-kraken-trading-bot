@@ -19,16 +19,16 @@ import threading
 import time
 from datetime import datetime, timedelta, timezone
 
-from trader.src.config import (
+from src.config import (
     SIGNAL_GATE_ENABLED,
     SIGNAL_LOOKBACK_HOURS,
     SIGNAL_CONFIDENCE_THRESHOLD,
     SIGNAL_BLOCK_HORIZONS,
 )
-from trader.src.engine.ema_filter import EMAPair
-from trader.src.engine.strategy import evaluate_positions
-from trader.src.market.questdb_client import QuestDBClient
-from trader.src.metrics import (
+from src.engine.ema_filter import EMAPair
+from src.engine.strategy import evaluate_positions
+from src.market.questdb_client import QuestDBClient
+from src.metrics import (
     update_metrics,
     BUYS_ATTEMPTED_TOTAL,
     BUYS_SUCCEEDED_TOTAL,
@@ -36,8 +36,8 @@ from trader.src.metrics import (
     SELLS_SUCCEEDED_TOTAL,
     ERRORS_TOTAL,
 )
-from trader.src.positions.positions_cache import CASH_SYMBOL, load_positions, save_positions
-from trader.src.trader.client import KrakenTrader
+from src.positions.positions_cache import CASH_SYMBOL, load_positions, save_positions
+from src.trader.client import KrakenTrader
 
 
 def _next_boundary(now: datetime, minutes: int) -> datetime:

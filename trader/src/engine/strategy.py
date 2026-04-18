@@ -16,7 +16,7 @@ from datetime import datetime, timezone
 
 import pandas as pd
 
-from trader.src.config import (
+from src.config import (
     BUY_THRESH,
     MIN_HOLD_BARS,
     MOMENTUM_LOOKBACK,
@@ -26,10 +26,10 @@ from trader.src.config import (
     PROFIT_TAKE_TIERS,
     PROFIT_TAKE_FRACTION,
 )
-from trader.src.engine.ema_filter import EMAPair, apply_ema_trend_filter
-from trader.src.engine.momentum import compute_momentum_scores
-from trader.src.market.questdb_client import QuestDBClient
-from trader.src.positions.positions_cache import CASH_SYMBOL, Position
+from src.engine.ema_filter import EMAPair, apply_ema_trend_filter
+from src.engine.momentum import compute_momentum_scores
+from src.market.questdb_client import QuestDBClient
+from src.positions.positions_cache import CASH_SYMBOL, Position
 
 
 def _utc_now_iso() -> str:

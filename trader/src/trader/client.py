@@ -4,15 +4,15 @@ import logging
 import time
 from typing import Optional
 
-from trader.src.kraken_api import (
+from src.kraken_api import (
     KrakenApiClient,
     symbol_to_pair,
     kraken_asset_to_symbol,
     symbol_to_kraken_asset,
     FIAT_ASSETS,
 )
-from trader.src.kraken_api.exceptions import KrakenInsufficientFundsError
-from trader.src.metrics import ORDER_SLIPPAGE
+from src.kraken_api.exceptions import KrakenInsufficientFundsError
+from src.metrics import ORDER_SLIPPAGE
 
 
 class KrakenTrader:

@@ -20,7 +20,7 @@ try:
 except ImportError:
     pass  # dotenv optional in production (env vars injected by k8s)
 
-from trader.src.config import (
+from src.config import (
     KRAKEN_API_KEY,
     KRAKEN_API_SECRET,
     POSITIONS_PATH,
@@ -32,12 +32,12 @@ from trader.src.config import (
     EMA_PARAMS_PATH,
     load_coin_list,
 )
-from trader.src.engine.ema_filter import load_ema_params
-from trader.src.engine.engine import Engine
-from trader.src.market.questdb_client import QuestDBClient
-from trader.src.metrics import start_metrics_server
-from trader.src.positions.positions_cache import init_positions
-from trader.src.trader.client import KrakenTrader
+from src.engine.ema_filter import load_ema_params
+from src.engine.engine import Engine
+from src.market.questdb_client import QuestDBClient
+from src.metrics import start_metrics_server
+from src.positions.positions_cache import init_positions
+from src.trader.client import KrakenTrader
 
 
 def _setup_logging() -> logging.Logger:

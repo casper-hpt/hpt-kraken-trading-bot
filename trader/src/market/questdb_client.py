@@ -12,7 +12,7 @@ from typing import Optional
 import pandas as pd
 import psycopg
 
-from trader.src.config import (
+from src.config import (
     QUESTDB_HOST,
     QUESTDB_PORT,
     QUESTDB_USER,

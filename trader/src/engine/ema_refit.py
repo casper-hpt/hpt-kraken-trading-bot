@@ -14,9 +14,9 @@ from typing import Optional
 
 import pandas as pd
 
-from trader.src.config import FAST_LIST, SLOW_LIST
-from trader.src.engine.ema_filter import EMAPair, load_ema_params, save_ema_params
-from trader.src.market.questdb_client import QuestDBClient
+from src.config import FAST_LIST, SLOW_LIST
+from src.engine.ema_filter import EMAPair, load_ema_params, save_ema_params
+from src.market.questdb_client import QuestDBClient
 
 
 def _sharpe(returns: pd.Series) -> float:
