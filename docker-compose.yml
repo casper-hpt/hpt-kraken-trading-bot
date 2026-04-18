@@ -23,11 +23,11 @@ services:
 
   # ── Data collection ──────────────────────────────────────────────────────────
   data-collector:
-    build: ./auto/data-collector
+    build: ./data-collector
     depends_on:
       questdb:
         condition: service_healthy
-    env_file: ./auto/.env
+    env_file: ./.env
     environment:
       QUESTDB_HOST: questdb
       QUESTDB_HTTP_PORT: "9000"
@@ -38,7 +38,7 @@ services:
 
   # ── Trading engine ───────────────────────────────────────────────────────────
   trader:
-    build: ./auto/trader
+    build: ./trader
     depends_on:
       questdb:
         condition: service_healthy
@@ -56,7 +56,7 @@ services:
       POSITIONS_PATH: /data/positions.json
     volumes:
       # ema_params.json lives on the host so the refit service can update it
-      - ./auto/trader/src/data:/app/src/data
+      - ./trader/src/data:/app/src/data
       # positions.json persisted in a named volume
       - trader-data:/data
     restart: unless-stopped
