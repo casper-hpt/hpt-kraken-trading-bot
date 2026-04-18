@@ -1,11 +1,8 @@
 from __future__ import annotations
 
-import io
 import logging
 import time
-import zipfile
 from dataclasses import dataclass
-from pathlib import Path
 from typing import Any, ClassVar
 
 import pandas as pd
@@ -24,21 +21,6 @@ _SYMBOL_TO_PAIR: dict[str, str] = {
     "BTC": "XBTUSD",
     "DOGE": "XDGUSD",
 }
-
-# Possible filename prefixes in Kraken bulk OHLCVT ZIPs for special symbols.
-_SYMBOL_TO_CSV_PREFIXES: dict[str, list[str]] = {
-    "BTC": ["XBTUSD", "XXBTZUSD"],
-    "DOGE": ["XDGUSD", "XXDGZUSD"],
-    "ETH": ["ETHUSD", "XETHZUSD"],
-    "XRP": ["XRPUSD", "XXRPZUSD"],
-    "LTC": ["LTCUSD", "XLTCZUSD"],
-    "XLM": ["XLMUSD", "XXLMZUSD"],
-    "ETC": ["ETCUSD", "XETCZUSD"],
-    "XMR": ["XMRUSD", "XXMRZUSD"],
-    "ZEC": ["ZECUSD", "XZECZUSD"],
-}
-
-_BULK_CSV_COLUMNS = ["ts", "open", "high", "low", "close", "volume", "trades"]
 
 
 def symbol_to_pair(symbol: str) -> str:
@@ -262,61 +244,6 @@ class KrakenClient:
         return rows
 
 
-def parse_bulk_csv(csv_data: str | bytes | io.IOBase) -> pd.DataFrame:
-    """Parse a Kraken bulk OHLCVT CSV (no header).
-
-    Columns: timestamp, open, high, low, close, volume, trades
-
-    Returns:
-        DataFrame with columns: ts, open, high, low, close, volume
-    """
-    df = pd.read_csv(
-        io.StringIO(csv_data) if isinstance(csv_data, str) else io.BytesIO(csv_data) if isinstance(csv_data, bytes) else csv_data,
-        header=None,
-        names=_BULK_CSV_COLUMNS,
-    )
-    if df.empty:
-        return pd.DataFrame(columns=["ts", "open", "high", "low", "close", "volume"])
-
-    df["ts"] = pd.to_datetime(df["ts"].astype(int), unit="s", utc=True).dt.tz_localize(None)
-    for col in ("open", "high", "low", "close", "volume"):
-        df[col] = pd.to_numeric(df[col], errors="coerce")
-    df = df.dropna(subset=["open", "high", "low", "close"])
-    df.sort_values("ts", inplace=True)
-    df.reset_index(drop=True, inplace=True)
-    return df[["ts", "open", "high", "low", "close", "volume"]]
-
-
-def find_csv_in_zip(zip_path: Path, symbol: str, interval: int = 15) -> str | None:
-    """Find the CSV filename inside a Kraken bulk ZIP for a given symbol.
-
-    Tries multiple naming conventions (e.g. XBTUSD_15.csv, XXBTZUSD_15.csv).
-
-    Returns:
-        The matching filename inside the ZIP, or None.
-    """
-    sym = symbol.upper()
-    prefixes = _SYMBOL_TO_CSV_PREFIXES.get(sym, [f"{sym}USD"])
-    candidates = [f"{p}_{interval}.csv" for p in prefixes]
-
-    with zipfile.ZipFile(zip_path, "r") as zf:
-        names = zf.namelist()
-        # Build a lookup from basename -> full path inside the ZIP
-        basename_map: dict[str, str] = {}
-        for n in names:
-            base = n.rsplit("/", 1)[-1] if "/" in n else n
-            basename_map[base] = n
-            basename_map[base.lower()] = n
-        for candidate in candidates:
-            # Try exact match on full path first
-            if candidate in basename_map:
-                return basename_map[candidate]
-            # Case-insensitive fallback
-            match = basename_map.get(candidate.lower())
-            if match:
-                return match
-    return None
-
 
 def trades_to_ohlcv_15m(trade_rows: list[tuple[float, float, float]]) -> pd.DataFrame:
     """Aggregate raw trades into 15-minute OHLCV bars.
@@ -346,7 +273,3 @@ def trades_to_ohlcv_15m(trade_rows: list[tuple[float, float, float]]) -> pd.Data
     return out[["ts", "open", "high", "low", "close", "volume"]]
 
 
-def read_csv_from_zip(zip_path: Path, csv_name: str) -> bytes:
-    """Read a single CSV file from a ZIP archive."""
-    with zipfile.ZipFile(zip_path, "r") as zf:
-        return zf.read(csv_name)

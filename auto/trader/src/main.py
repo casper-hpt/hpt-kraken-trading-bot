@@ -2,6 +2,10 @@
 
 Loads config from environment, initialises all components, and runs the
 strategy + trade-execution engine until interrupted.
+
+Subcommands:
+  (none)   Start the live trading engine (default)
+  refit    Run weekly EMA parameter grid-search and exit
 """
 
 from __future__ import annotations
@@ -25,6 +29,7 @@ from src.config import (
     CYCLE_INTERVAL,
     MAX_POSITIONS,
     SETTLEMENT_DELAY_SECONDS,
+    EMA_PARAMS_PATH,
     load_coin_list,
 )
 from src.engine.ema_filter import load_ema_params
@@ -46,7 +51,25 @@ def _setup_logging() -> logging.Logger:
     return logging.getLogger("crypto-trader")
 
 
-def main() -> None:
+def cmd_refit() -> None:
+    from src.engine.ema_refit import refit_ema_params
+
+    log = _setup_logging()
+    log.info("EMA refit job starting ...")
+
+    coin_list = load_coin_list()
+    db_client = QuestDBClient(log=log)
+
+    refit_ema_params(
+        db_client=db_client,
+        symbols=coin_list,
+        output_path=str(EMA_PARAMS_PATH),
+        log=log,
+    )
+    log.info("EMA refit job complete.")
+
+
+def cmd_serve() -> None:
     log = _setup_logging()
 
     log.info("crypto-trader starting up ...")
@@ -56,17 +79,14 @@ def main() -> None:
         log.error("KRAKEN_API_KEY is not set and DRY_RUN is false — refusing to start")
         sys.exit(1)
 
-    # Start Prometheus metrics server
     start_metrics_server(PROMETHEUS_PORT)
 
-    # Initialise components
     db_client = QuestDBClient(log=log)
     ema_map = load_ema_params(log=log)
     coin_list = load_coin_list()
 
     log.info("Loaded %d EMA params, %d coins in watchlist", len(ema_map), len(coin_list))
 
-    # Initialise positions file (creates cash slots if first run)
     init_positions(str(POSITIONS_PATH), MAX_POSITIONS)
 
     trader = KrakenTrader(
@@ -89,6 +109,13 @@ def main() -> None:
     )
 
     engine.run()
+
+
+def main() -> None:
+    if len(sys.argv) > 1 and sys.argv[1] == "refit":
+        cmd_refit()
+    else:
+        cmd_serve()
 
 
 if __name__ == "__main__":

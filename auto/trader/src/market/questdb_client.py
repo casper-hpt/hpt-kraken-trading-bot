@@ -177,3 +177,46 @@ class QuestDBClient:
             return []
 
         return [str(row[0]) for row in rows]
+
+    def fetch_bearish_blocked_symbols(
+        self,
+        lookback_hours: int = 24,
+        confidence_threshold: float = 0.70,
+        block_horizons: set[str] | None = None,
+    ) -> set[str]:
+        """Return symbols with recent high-confidence bearish LLM signals.
+
+        Degrades gracefully — returns empty set on any error so the trader
+        continues running without the signal gate.
+        """
+        horizons = block_horizons if block_horizons is not None else {"1-7d", "1-4w", "structural"}
+        if not horizons:
+            return set()
+
+        placeholders = ", ".join(f"'{h}'" for h in horizons)
+        query = f"""
+            SELECT affected_symbols
+            FROM crypto_signals
+            WHERE direction = 'bearish'
+              AND confidence >= {confidence_threshold}
+              AND time_horizon IN ({placeholders})
+              AND ts >= dateadd('h', -{lookback_hours}, now())
+        """
+        try:
+            with self._connect() as conn:
+                with conn.cursor() as cur:
+                    cur.execute(query)
+                    rows = cur.fetchall()
+        except Exception:
+            self.log.warning("fetch_bearish_blocked_symbols failed; proceeding without signal gate")
+            return set()
+
+        blocked: set[str] = set()
+        for row in rows:
+            raw = str(row[0]) if row[0] else ""
+            for sym in raw.split(","):
+                sym = sym.strip().upper()
+                if sym:
+                    blocked.add(sym)
+        return blocked
+

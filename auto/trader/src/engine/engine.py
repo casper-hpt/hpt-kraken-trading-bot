@@ -19,6 +19,12 @@ import threading
 import time
 from datetime import datetime, timedelta, timezone
 
+from src.config import (
+    SIGNAL_GATE_ENABLED,
+    SIGNAL_LOOKBACK_HOURS,
+    SIGNAL_CONFIDENCE_THRESHOLD,
+    SIGNAL_BLOCK_HORIZONS,
+)
 from src.engine.ema_filter import EMAPair
 from src.engine.strategy import evaluate_positions
 from src.market.questdb_client import QuestDBClient
@@ -143,6 +149,17 @@ class Engine:
         positions = load_positions(self.positions_path)
         prev_symbols = [p.symbol for p in positions]
 
+        blocked_symbols: set[str] = set()
+        if SIGNAL_GATE_ENABLED:
+            try:
+                blocked_symbols = self.db_client.fetch_bearish_blocked_symbols(
+                    lookback_hours=SIGNAL_LOOKBACK_HOURS,
+                    confidence_threshold=SIGNAL_CONFIDENCE_THRESHOLD,
+                    block_horizons=SIGNAL_BLOCK_HORIZONS,
+                )
+            except Exception:
+                self.log.warning("Signal gate fetch failed; proceeding without it")
+
         new_positions, new_symbols, signals, partial_sells = evaluate_positions(
             current_list=prev_symbols,
             positions=positions,
@@ -150,6 +167,7 @@ class Engine:
             db_client=self.db_client,
             max_positions=self.max_positions,
             log=self.log,
+            blocked_symbols=blocked_symbols,
         )
 
         # Compute full buys / sells from slot changes

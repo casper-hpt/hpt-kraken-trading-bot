@@ -1,0 +1,226 @@
+{
+  "uid": "hpt-llm",
+  "title": "HPT LLM",
+  "tags": ["2apollo", "llm"],
+  "timezone": "browser",
+  "refresh": "30s",
+  "time": { "from": "now-24h", "to": "now" },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Service Health",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 4, "x": 0, "y": 0 },
+      "targets": [{ "expr": "up{job=\"hpt-llm\"}", "legendFormat": "hpt-llm" }],
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [{ "type": "value", "options": { "0": { "text": "DOWN", "color": "red" }, "1": { "text": "UP", "color": "green" } } }],
+          "thresholds": { "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] }
+        }
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "none" }
+    },
+    {
+      "id": 2,
+      "title": "Slack Messages (per minute)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 10, "x": 4, "y": 0 },
+      "targets": [
+        { "expr": "rate(llm_slack_messages_total[5m]) * 60", "legendFormat": "{{type}}" }
+      ],
+      "fieldConfig": { "defaults": { "custom": { "fillOpacity": 20 } } }
+    },
+    {
+      "id": 3,
+      "title": "Slack Errors",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 4, "x": 14, "y": 0 },
+      "targets": [{ "expr": "llm_slack_response_errors_total", "legendFormat": "errors" }],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": { "steps": [{ "color": "green", "value": null }, { "color": "red", "value": 1 }] }
+        }
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "none" }
+    },
+    {
+      "id": 4,
+      "title": "Theory Runs",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 3, "x": 18, "y": 0 },
+      "targets": [{ "expr": "llm_theory_runs_total", "legendFormat": "runs" }],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": { "steps": [{ "color": "blue", "value": null }] }
+        }
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "none" }
+    },
+    {
+      "id": 5,
+      "title": "Do Not Trade",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 3, "x": 21, "y": 0 },
+      "targets": [{ "expr": "llm_theory_do_not_trade", "legendFormat": "do_not_trade" }],
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [{ "type": "value", "options": { "0": { "text": "TRADE", "color": "green" }, "1": { "text": "DO NOT TRADE", "color": "red" } } }],
+          "thresholds": { "steps": [{ "color": "green", "value": null }, { "color": "red", "value": 1 }] }
+        }
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "none" }
+    },
+    {
+      "id": 6,
+      "title": "Ollama Call Rate (per minute)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "targets": [
+        { "expr": "rate(llm_ollama_calls_total[5m]) * 60", "legendFormat": "calls/min" }
+      ],
+      "fieldConfig": { "defaults": { "custom": { "fillOpacity": 10 } } }
+    },
+    {
+      "id": 7,
+      "title": "Ollama Call Duration (seconds)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "targets": [{ "expr": "llm_ollama_call_duration_seconds", "legendFormat": "duration" }],
+      "fieldConfig": { "defaults": { "unit": "s", "custom": { "fillOpacity": 10 } } }
+    },
+    {
+      "id": 8,
+      "title": "Ollama Errors",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 16 },
+      "targets": [{ "expr": "llm_ollama_errors_total", "legendFormat": "errors" }],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": { "steps": [{ "color": "green", "value": null }, { "color": "red", "value": 1 }] }
+        }
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "none" }
+    },
+    {
+      "id": 9,
+      "title": "Tool Calls (per minute)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 18, "x": 6, "y": 16 },
+      "targets": [
+        { "expr": "rate(llm_tool_calls_total[5m]) * 60", "legendFormat": "{{tool}}" }
+      ],
+      "fieldConfig": { "defaults": { "custom": { "fillOpacity": 10 } } }
+    },
+    {
+      "id": 10,
+      "title": "Tool Duration (seconds)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 24 },
+      "targets": [{ "expr": "llm_tool_duration_seconds", "legendFormat": "{{tool}}" }],
+      "fieldConfig": { "defaults": { "unit": "s", "custom": { "fillOpacity": 10 } } }
+    },
+    {
+      "id": 11,
+      "title": "Tool Errors",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 24 },
+      "targets": [{ "expr": "rate(llm_tool_errors_total[5m]) * 60", "legendFormat": "{{tool}}" }],
+      "fieldConfig": { "defaults": { "color": { "mode": "fixed", "fixedColor": "red" }, "custom": { "fillOpacity": 20 } } }
+    },
+    {
+      "id": 12,
+      "title": "Theory Pipeline Duration (seconds)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 32 },
+      "targets": [{ "expr": "llm_theory_run_duration_seconds", "legendFormat": "duration" }],
+      "fieldConfig": { "defaults": { "unit": "s", "custom": { "fillOpacity": 10 } } }
+    },
+    {
+      "id": 13,
+      "title": "Articles Scanned",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 4, "x": 12, "y": 32 },
+      "targets": [{ "expr": "llm_theory_articles_scanned", "legendFormat": "articles" }],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": { "steps": [{ "color": "blue", "value": null }] }
+        }
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "none" }
+    },
+    {
+      "id": 14,
+      "title": "Symbols Scored",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 4, "x": 16, "y": 32 },
+      "targets": [{ "expr": "llm_theory_symbols_scored", "legendFormat": "symbols" }],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": { "steps": [{ "color": "blue", "value": null }] }
+        }
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "none" }
+    },
+    {
+      "id": 15,
+      "title": "Signals Published",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 4, "x": 20, "y": 32 },
+      "targets": [{ "expr": "llm_theory_signal_published_total", "legendFormat": "signals" }],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": { "steps": [{ "color": "blue", "value": null }] }
+        }
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "none" }
+    },
+    {
+      "id": 16,
+      "title": "Theory Errors",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 4, "x": 12, "y": 36 },
+      "targets": [{ "expr": "llm_theory_errors_total", "legendFormat": "errors" }],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": { "steps": [{ "color": "green", "value": null }, { "color": "red", "value": 1 }] }
+        }
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "none" }
+    },
+    {
+      "id": 17,
+      "title": "QuestDB Query Duration (seconds)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 40 },
+      "targets": [{ "expr": "llm_questdb_query_duration_seconds", "legendFormat": "{{query}}" }],
+      "fieldConfig": { "defaults": { "unit": "s", "custom": { "fillOpacity": 10 } } }
+    },
+    {
+      "id": 18,
+      "title": "QuestDB Errors",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 4, "x": 12, "y": 40 },
+      "targets": [{ "expr": "llm_questdb_errors_total", "legendFormat": "errors" }],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": { "steps": [{ "color": "green", "value": null }, { "color": "red", "value": 1 }] }
+        }
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "none" }
+    },
+    {
+      "id": 19,
+      "title": "Kafka Publish Errors",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 4, "x": 16, "y": 40 },
+      "targets": [{ "expr": "llm_kafka_publish_errors_total", "legendFormat": "errors" }],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": { "steps": [{ "color": "green", "value": null }, { "color": "red", "value": 1 }] }
+        }
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "none" }
+    }
+  ],
+  "schemaVersion": 39
+}

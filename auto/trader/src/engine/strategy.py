@@ -43,6 +43,7 @@ def evaluate_positions(
     db_client: QuestDBClient,
     max_positions: int,
     log: logging.Logger,
+    blocked_symbols: set[str] | None = None,
 ) -> tuple[list[Position], list[str], dict, list[dict]]:
     """Evaluate all coins and return updated positions + signals.
 
@@ -51,22 +52,10 @@ def evaluate_positions(
       2. Compute momentum scores
       3. Apply EMA trend filter
       4. Extract latest-bar signals per symbol
-      5. Sell on EMA bearish crossover (if held long enough)
-      5b. Incremental profit taking at 5% intervals (25% each tier)
+      5. Sell on stop-loss or EMA bearish crossover (if held long enough)
+      5b. Incremental profit taking at configured tiers
       6. Buy top-ranked momentum candidates with trend_ok
-      7. Return ``(new_positions, new_symbols, signals, partial_sells)``
-
-    Args:
-        current_list: Symbol per slot (``$CASH$`` for empty slots).
-        positions: Existing Position objects (parallel to *current_list*).
-        ema_map: Per-symbol EMA parameters from ``ema_params.json``.
-        db_client: QuestDBClient with updated bar cache.
-        max_positions: Number of portfolio slots.
-        log: Logger instance.
-
-    Returns:
-        ``(new_positions, new_symbols, signals, partial_sells)``
-        where partial_sells is a list of ``{symbol, slot_id, quantity}`` dicts.
+      7. Return (new_positions, new_symbols, signals, partial_sells)
     """
     # 1. Get all cached bars
     all_bars = db_client.get_all_cached_bars()
@@ -201,10 +190,7 @@ def evaluate_positions(
             )
             new_symbols[slot_idx] = CASH_SYMBOL
             cash_slots.append(slot_idx)
-            if stop_loss_sell:
-                reason = f"STOP_LOSS({loss_pct:+.1%})"
-            else:
-                reason = "EMA bearish crossover"
+            reason = f"STOP_LOSS({loss_pct:+.1%})" if stop_loss_sell else "EMA bearish crossover"
             log.info(
                 "SELL %s (slot %d) — %s after %d bars",
                 coin,
@@ -279,10 +265,18 @@ def evaluate_positions(
     # 5b. Buy candidates: momentum > BUY_THRESH and trend_ok
     buy_candidates: list[tuple[str, dict]] = []
     held_set = set(held_coins.keys())
+    _blocked = blocked_symbols or set()
     for sym, sig in coin_signals.items():
         if sym in held_set:
             continue
         if sig["momentum_score"] is None:
+            continue
+        if sym in _blocked:
+            log.info(
+                "SIGNAL GATE: skipping BUY %s (bearish LLM signal, momentum=%.2f)",
+                sym,
+                sig["momentum_score"],
+            )
             continue
         if sig["momentum_score"] > BUY_THRESH and sig["trend_ok"]:
             buy_candidates.append((sym, sig))

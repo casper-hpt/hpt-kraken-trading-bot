@@ -1,0 +1,7 @@
+feedparser
+openai>=1.0
+questdb
+pandas
+pyarrow
+prometheus_client>=0.20
+requests

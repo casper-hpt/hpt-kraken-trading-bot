@@ -73,6 +73,12 @@ LIMIT_ORDER_DRIFT_PCT = float(os.getenv("LIMIT_ORDER_DRIFT_PCT", "0.005"))
 # Maximum cancel+repost cycles before giving up on an order
 LIMIT_ORDER_MAX_RETRIES = int(os.getenv("LIMIT_ORDER_MAX_RETRIES", "5"))
 
+# ── LLM signal gate ──────────────────────────────────────────────────────────
+SIGNAL_GATE_ENABLED         = os.getenv("SIGNAL_GATE_ENABLED", "false").lower() == "true"
+SIGNAL_LOOKBACK_HOURS       = int(os.getenv("SIGNAL_LOOKBACK_HOURS", "24"))
+SIGNAL_CONFIDENCE_THRESHOLD = float(os.getenv("SIGNAL_CONFIDENCE_THRESHOLD", "0.70"))
+SIGNAL_BLOCK_HORIZONS       = set(os.getenv("SIGNAL_BLOCK_HORIZONS", "1-7d,1-4w,structural").split(","))
+
 
 # ── Coin list ────────────────────────────────────────────────────────────────
 

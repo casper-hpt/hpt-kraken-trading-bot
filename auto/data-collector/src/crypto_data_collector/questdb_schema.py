@@ -68,3 +68,14 @@ class SchemaManager:
                 self._convert_to_wal(table)
 
         LOG.info("Schema ensured.")
+
+    def purge_old_bars(self, retention_days: int = 90) -> None:
+        """Drop daily partitions from crypto_bars_15m older than retention_days."""
+        try:
+            self.rest.exec(
+                f"ALTER TABLE crypto_bars_15m DROP PARTITION "
+                f"WHERE ts < dateadd('d', -{retention_days}, now());"
+            )
+            LOG.info("Purged crypto_bars_15m partitions older than %d days.", retention_days)
+        except Exception as e:
+            LOG.warning("Failed to purge old bar partitions: %s", e)

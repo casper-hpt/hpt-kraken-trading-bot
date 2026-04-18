@@ -1,140 +1,48 @@
-{
-    "BTC": {
-        "symbol": "BTC"
-    },
-    "ETH": {
-        "symbol": "ETH"
-    },
-    "XRP": {
-        "symbol": "XRP"
-    },
-    "SOL": {
-        "symbol": "SOL"
-    },
-    "ADA": {
-        "symbol": "ADA"
-    },
-    "DOGE": {
-        "symbol": "DOGE"
-    },
-    "LINK": {
-        "symbol": "LINK"
-    },
-    "DOT": {
-        "symbol": "DOT"
-    },
-    "AVAX": {
-        "symbol": "AVAX"
-    },
-    "LTC": {
-        "symbol": "LTC"
-    },
-    "BCH": {
-        "symbol": "BCH"
-    },
-    "XLM": {
-        "symbol": "XLM"
-    },
-    "ETC": {
-        "symbol": "ETC"
-    },
-    "ATOM": {
-        "symbol": "ATOM"
-    },
-    "XMR": {
-        "symbol": "XMR"
-    },
-    "ZEC": {
-        "symbol": "ZEC"
-    },
-    "AAVE": {
-        "symbol": "AAVE"
-    },
-    "UNI": {
-        "symbol": "UNI"
-    },
-    "ALGO": {
-        "symbol": "ALGO"
-    },
-    "NEAR": {
-        "symbol": "NEAR"
-    },
-    "ICP": {
-        "symbol": "ICP"
-    },
-    "QNT": {
-        "symbol": "QNT"
-    },
-    "APT": {
-        "symbol": "APT"
-    },
-    "SHIB": {
-        "symbol": "SHIB"
-    },
-    "TRX": {
-        "symbol": "TRX"
-    },
-    "FIL": {
-        "symbol": "FIL"
-    },
-    "ARB": {
-        "symbol": "ARB"
-    },
-    "OP": {
-        "symbol": "OP"
-    },
-    "SUI": {
-        "symbol": "SUI"
-    },
-    "SEI": {
-        "symbol": "SEI"
-    },
-    "MATIC": {
-        "symbol": "MATIC"
-    },
-    "INJ": {
-        "symbol": "INJ"
-    },
-    "RUNE": {
-        "symbol": "RUNE"
-    },
-    "KSM": {
-        "symbol": "KSM"
-    },
-    "FLOW": {
-        "symbol": "FLOW"
-    },
-    "EGLD": {
-        "symbol": "EGLD"
-    },
-    "SAND": {
-        "symbol": "SAND"
-    },
-    "MANA": {
-        "symbol": "MANA"
-    },
-    "CHZ": {
-        "symbol": "CHZ"
-    },
-    "CRV": {
-        "symbol": "CRV"
-    },
-    "SNX": {
-        "symbol": "SNX"
-    },
-    "COMP": {
-        "symbol": "COMP"
-    },
-    "LDO": {
-        "symbol": "LDO"
-    },
-    "DYDX": {
-        "symbol": "DYDX"
-    },
-    "GMX": {
-        "symbol": "GMX"
-    },
-    "IMX": {
-        "symbol": "IMX"
-    }
-}
+[
+    "AAVE",
+    "ADA",
+    "ALGO",
+    "APT",
+    "ARB",
+    "ATOM",
+    "AVAX",
+    "BCH",
+    "BTC",
+    "CHZ",
+    "COMP",
+    "CRV",
+    "DOGE",
+    "DOT",
+    "DYDX",
+    "EGLD",
+    "ETC",
+    "ETH",
+    "FIL",
+    "FLOW",
+    "GMX",
+    "ICP",
+    "IMX",
+    "INJ",
+    "KSM",
+    "LDO",
+    "LINK",
+    "LTC",
+    "MANA",
+    "MATIC",
+    "NEAR",
+    "OP",
+    "QNT",
+    "RUNE",
+    "SAND",
+    "SEI",
+    "SHIB",
+    "SNX",
+    "SOL",
+    "SUI",
+    "TRX",
+    "UNI",
+    "XLM",
+    "XMR",
+    "XRP",
+    "ZEC"
+]

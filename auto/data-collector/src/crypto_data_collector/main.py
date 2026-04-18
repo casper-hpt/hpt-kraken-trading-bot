@@ -16,7 +16,7 @@ from .metrics import (
     API_ERRORS_TOTAL, WATCHLIST_SIZE, start_metrics_server,
 )
 from .watchlist import load_watchlist
-from .kraken_client import KrakenClient, symbol_to_pair, find_csv_in_zip, read_csv_from_zip, parse_bulk_csv, trades_to_ohlcv_15m
+from .kraken_client import KrakenClient, symbol_to_pair, trades_to_ohlcv_15m
 from .questdb_rest import QuestDBRest
 from .questdb_schema import SchemaManager
 from .questdb_writer import QuestDBWriter
@@ -74,7 +74,9 @@ def run_cycle(cfg: Config, watchlist_path: str) -> int:
     WATCHLIST_SIZE.set(len(symbols))
 
     rest = QuestDBRest(cfg.questdb_exec_url)
-    SchemaManager(rest).ensure_schema()
+    schema = SchemaManager(rest)
+    schema.ensure_schema()
+    schema.purge_old_bars()
     writer = QuestDBWriter(cfg.questdb_ilp_conf, rest)
 
     writer.write_watchlist(watchlist_items)
@@ -117,68 +119,6 @@ def cmd_bootstrap(cfg: Config) -> int:
     SchemaManager(rest).ensure_schema()
     return 0
 
-
-def cmd_seed(cfg: Config, watchlist_path: str, zip_path: str) -> int:
-    """Load bulk Kraken OHLCVT CSV data from a ZIP into QuestDB."""
-    global _shutdown_requested
-
-    zp = Path(zip_path)
-    if not zp.exists():
-        LOG.error("ZIP file not found: %s", zp)
-        return 1
-
-    watchlist_items = load_watchlist(watchlist_path)
-    if not watchlist_items:
-        LOG.warning("No symbols found in watchlist: %s", watchlist_path)
-        return 0
-
-    symbols = [item.symbol for item in watchlist_items]
-
-    rest = QuestDBRest(cfg.questdb_exec_url)
-    SchemaManager(rest).ensure_schema()
-    writer = QuestDBWriter(cfg.questdb_ilp_conf, rest)
-
-    writer.write_watchlist(watchlist_items)
-
-    total_inserted = 0
-    for sym in symbols:
-        if _shutdown_requested:
-            LOG.info("Shutdown requested, stopping seed early")
-            break
-
-        csv_name = find_csv_in_zip(zp, sym, interval=15)
-        if csv_name is None:
-            LOG.warning("No CSV found in ZIP for symbol %s, skipping", sym)
-            continue
-
-        LOG.info("Seeding %s from %s ...", sym, csv_name)
-        try:
-            csv_bytes = read_csv_from_zip(zp, csv_name)
-            bars = parse_bulk_csv(csv_bytes)
-            LOG.info("  Parsed %d bars for %s (%s -> %s)",
-                     len(bars), sym,
-                     bars["ts"].min() if not bars.empty else "N/A",
-                     bars["ts"].max() if not bars.empty else "N/A")
-
-            # Write in chunks to avoid memory issues with large CSVs
-            chunk_size = 50_000
-            sym_inserted = 0
-            for start in range(0, len(bars), chunk_size):
-                if _shutdown_requested:
-                    break
-                chunk = bars.iloc[start:start + chunk_size]
-                df = _build_bar_frame(chunk, sym)
-                inserted = writer.write_bars(df)
-                sym_inserted += inserted
-
-            total_inserted += sym_inserted
-            LOG.info("  Symbol=%s total_inserted=%d", sym, sym_inserted)
-        except Exception as e:
-            LOG.exception("Failed to seed %s: %s", sym, e)
-            continue
-
-    LOG.info("Seed complete. total_inserted=%d", total_inserted)
-    return 0
 
 
 def _backfill_window(
@@ -391,11 +331,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     sub.add_parser("bootstrap", help="Create/ensure QuestDB schema exists")
 
-    p_seed = sub.add_parser("seed", help="Load bulk Kraken OHLCVT CSV data from ZIP into QuestDB")
-    p_seed.add_argument("--watchlist", default="crypto_watchlist.json", help="Path to watchlist JSON")
-    p_seed.add_argument("--zip", required=True, help="Path to Kraken OHLCVT ZIP file")
-
-    p_bf = sub.add_parser("backfill", help="Backfill gap between seed data and now via Kraken API")
+    p_bf = sub.add_parser("backfill", help="Backfill historical bars from Kraken API")
     p_bf.add_argument("--watchlist", default="crypto_watchlist.json", help="Path to watchlist JSON")
     p_bf.add_argument("--from", dest="from_ts", default=None, help="ISO-8601 start timestamp (default: 90 days ago if DB is empty)")
 
@@ -421,8 +357,6 @@ def main(argv: list[str] | None = None) -> None:
 
     if args.cmd == "bootstrap":
         rc = cmd_bootstrap(cfg)
-    elif args.cmd == "seed":
-        rc = cmd_seed(cfg, args.watchlist, args.zip)
     elif args.cmd == "backfill":
         rc = cmd_backfill(cfg, args.watchlist, from_ts=args.from_ts)
     elif args.cmd == "run-once":

@@ -1,0 +1,149 @@
+services:
+
+  # ── Database ─────────────────────────────────────────────────────────────────
+  questdb:
+    image: questdb/questdb:8.2.1
+    ports:
+      - "9000:9000"   # HTTP console  →  http://localhost:9000
+      - "8812:8812"   # PGWire (Postgres protocol)
+      - "9009:9009"   # ILP TCP ingest
+    volumes:
+      - questdb-data:/var/lib/questdb
+    environment:
+      QDB_HTTP_ENABLED: "true"
+      QDB_PG_ENABLED: "true"
+      QDB_LINE_TCP_ENABLED: "true"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:9000/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    restart: unless-stopped
+
+  # ── Data collection ──────────────────────────────────────────────────────────
+  data-collector:
+    build: ./data-collector
+    depends_on:
+      questdb:
+        condition: service_healthy
+    environment:
+      QUESTDB_HOST: questdb
+      QUESTDB_HTTP_PORT: "9000"
+      INGEST_INTERVAL_MINUTES: "1"
+      PROMETHEUS_PORT: "9092"
+      LOG_LEVEL: INFO
+    volumes:
+      # Mount watchlist so users can edit symbols without rebuilding
+      - ./data-collector/crypto_watchlist.json:/app/crypto_watchlist.json:ro
+    restart: unless-stopped
+
+  # ── Trading engine ───────────────────────────────────────────────────────────
+  trader:
+    build: ./trader
+    depends_on:
+      questdb:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      QUESTDB_HOST: questdb
+      QUESTDB_PORT: "8812"
+      QUESTDB_USER: admin
+      QUESTDB_PASSWORD: quest
+      QUESTDB_DBNAME: qdb
+      PROMETHEUS_PORT: "9095"
+      CYCLE_INTERVAL: "15"
+      MAX_POSITIONS: "5"
+      SETTLEMENT_DELAY_SECONDS: "5.0"
+      POSITIONS_PATH: /data/positions.json
+    volumes:
+      # ema_params.json lives on the host so the refit service can update it
+      - ./trader/src/data:/app/src/data
+      # positions.json persisted in a named volume
+      - trader-data:/data
+    restart: unless-stopped
+
+  # ── LLM signal service ───────────────────────────────────────────────────────
+  signal-service:
+    build: ./signal-service
+    depends_on:
+      questdb:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      QUESTDB_HOST: questdb
+      QUESTDB_HTTP_PORT: "9000"
+      SIGNAL_POLL_INTERVAL_MINUTES: "60"
+      PROMETHEUS_PORT: "9093"
+      LOG_LEVEL: INFO
+      LLM_MODEL: gpt-4o-mini
+      LLM_MAX_ITEMS_PER_CYCLE: "20"
+    restart: unless-stopped
+
+  # ── EMA refit (run manually or via cron — not started by default) ─────────────
+  # Usage:  docker compose run --rm ema-refit
+  # Cron:   0 8 * * 0  docker compose -f /path/to/docker-compose.yml run --rm ema-refit
+  ema-refit:
+    build: ./trader
+    profiles: ["refit"]
+    depends_on:
+      questdb:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      QUESTDB_HOST: questdb
+      QUESTDB_PORT: "8812"
+      QUESTDB_USER: admin
+      QUESTDB_PASSWORD: quest
+      QUESTDB_DBNAME: qdb
+    command: ["python", "-m", "src.main", "refit"]
+    volumes:
+      - ./trader/src/data:/app/src/data
+
+  # ── Metrics ──────────────────────────────────────────────────────────────────
+  prometheus:
+    image: prom/prometheus:latest
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.retention.time=30d"
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"   # Dashboard  →  http://localhost:3000  (admin / admin)
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/opt/grafana/dashboards:ro
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+  # ── Web UI ───────────────────────────────────────────────────────────────────
+  webapp:
+    build:
+      context: ../web
+    ports:
+      - "8080:8080"   # UI  →  http://localhost:8080
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./:/auto   # gives the API read/write access to .env and watchlist
+    environment:
+      WATCHLIST_PATH: /auto/data-collector/crypto_watchlist.json
+      ENV_PATH: /auto/.env
+      COMPOSE_PROJECT: auto
+    restart: unless-stopped
+
+volumes:
+  questdb-data:
+  trader-data:
+  prometheus-data:
+  grafana-data:

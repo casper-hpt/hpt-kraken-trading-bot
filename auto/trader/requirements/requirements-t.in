@@ -1,0 +1,13 @@
+
+numpy
+pandas
+scipy
+scikit-learn
+
+psycopg[binary]
+httpx
+
+pydantic
+python-dotenv
+
+prometheus_client

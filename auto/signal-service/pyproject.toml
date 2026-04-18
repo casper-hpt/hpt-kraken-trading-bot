@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "crypto-signal-service"
+version = "0.1.0"
+requires-python = ">=3.10"
+dependencies = [
+    "feedparser",
+    "openai>=1.0",
+    "questdb",
+    "pandas",
+    "pyarrow",
+    "prometheus_client>=0.20",
+    "requests",
+]
+
+[project.optional-dependencies]
+dev = ["pytest", "python-dotenv"]
+
+[project.scripts]
+crypto-signal-service = "crypto_signal_service.main:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
