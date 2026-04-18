@@ -65,7 +65,13 @@ docker compose up -d --no-deps trader
 docker compose run --rm ema-refit
 ```
 
-**Edit the watchlist** — update `CRYPTO_LIST` in `auto/.env`, then restart the data-collector:
+To automate it, add to `crontab -e` on the host:
+```
+0 8 * * 0  cd /path/to/repo && docker compose run --rm ema-refit
+```
+This runs every Sunday at 08:00. Replace `/path/to/repo` with the absolute path to this repository.
+
+**Edit the watchlist** — update `CRYPTO_LIST` in `.env`, then restart the data-collector:
 ```bash
 docker compose up -d --no-deps data-collector
 ```
