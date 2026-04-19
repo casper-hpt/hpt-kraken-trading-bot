@@ -18,7 +18,7 @@ class SignalWriter:
         if not signals:
             return 0
 
-        now = pd.Timestamp.utcnow().tz_localize(None)
+        now = pd.Timestamp.now("UTC").tz_convert(None)
 
         rows = []
         for s in signals:
@@ -55,7 +55,6 @@ class SignalWriter:
                     symbols=["event_type", "asset_scope", "time_horizon", "direction"],
                     at="ts",
                 )
-                sender.flush()
             return len(df)
         except IngressError:
             log.exception("QuestDB ILP ingest error for crypto_signals")
