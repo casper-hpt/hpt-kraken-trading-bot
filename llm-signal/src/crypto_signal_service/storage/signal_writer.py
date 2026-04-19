@@ -44,8 +44,6 @@ class SignalWriter:
             })
 
         df = pd.DataFrame(rows)
-        for col in ("event_type", "asset_scope", "time_horizon", "direction"):
-            df[col] = pd.Categorical(df[col])
 
         try:
             with Sender.from_conf(self._ilp_conf) as sender:
