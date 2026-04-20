@@ -149,7 +149,7 @@ class Engine:
         positions = load_positions(self.positions_path)
         prev_symbols = [p.symbol for p in positions]
 
-        blocked_symbols: set[str] = set()
+        block_all_buys = False
         if SIGNAL_GATE_ENABLED:
             try:
                 blocked_symbols = self.db_client.fetch_bearish_blocked_symbols(
@@ -158,14 +158,15 @@ class Engine:
                     block_horizons=SIGNAL_BLOCK_HORIZONS,
                 )
                 if blocked_symbols:
+                    block_all_buys = True
                     self.log.info(
-                        "Signal gate: blocking buys for %s (bearish, conf>=%.2f, within %dh)",
+                        "Signal gate: ALL buys blocked — bearish signals for %s (conf>=%.2f, within %dh)",
                         sorted(blocked_symbols),
                         SIGNAL_CONFIDENCE_THRESHOLD,
                         SIGNAL_LOOKBACK_HOURS,
                     )
                 else:
-                    self.log.info("Signal gate: active, no bearish symbols blocked")
+                    self.log.info("Signal gate: active, no bearish signals — buys open")
             except Exception:
                 self.log.warning("Signal gate fetch failed; proceeding without it")
 
@@ -176,7 +177,7 @@ class Engine:
             db_client=self.db_client,
             max_positions=self.max_positions,
             log=self.log,
-            blocked_symbols=blocked_symbols,
+            block_all_buys=block_all_buys,
         )
 
         # Compute full buys / sells from slot changes

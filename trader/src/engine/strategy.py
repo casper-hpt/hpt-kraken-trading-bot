@@ -43,7 +43,7 @@ def evaluate_positions(
     db_client: QuestDBClient,
     max_positions: int,
     log: logging.Logger,
-    blocked_symbols: set[str] | None = None,
+    block_all_buys: bool = False,
 ) -> tuple[list[Position], list[str], dict, list[dict]]:
     """Evaluate all coins and return updated positions + signals.
 
@@ -264,22 +264,17 @@ def evaluate_positions(
 
     # 5b. Buy candidates: momentum > BUY_THRESH and trend_ok
     buy_candidates: list[tuple[str, dict]] = []
-    held_set = set(held_coins.keys())
-    _blocked = blocked_symbols or set()
-    for sym, sig in coin_signals.items():
-        if sym in held_set:
-            continue
-        if sig["momentum_score"] is None:
-            continue
-        if sym in _blocked:
-            log.info(
-                "SIGNAL GATE: skipping BUY %s (bearish LLM signal, momentum=%.2f)",
-                sym,
-                sig["momentum_score"],
-            )
-            continue
-        if sig["momentum_score"] > BUY_THRESH and sig["trend_ok"]:
-            buy_candidates.append((sym, sig))
+    if block_all_buys:
+        log.info("SIGNAL GATE: all buys blocked (bearish LLM signal active)")
+    else:
+        held_set = set(held_coins.keys())
+        for sym, sig in coin_signals.items():
+            if sym in held_set:
+                continue
+            if sig["momentum_score"] is None:
+                continue
+            if sig["momentum_score"] > BUY_THRESH and sig["trend_ok"]:
+                buy_candidates.append((sym, sig))
 
     buy_candidates.sort(key=lambda x: x[1]["momentum_score"], reverse=True)
 
