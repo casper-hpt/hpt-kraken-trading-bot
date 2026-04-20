@@ -30,7 +30,7 @@ class Config:
     gdelt_max_records: int = 50
     gdelt_timespan: str = "2h"
 
-    signal_poll_interval_minutes: int = 60
+    signal_poll_interval_minutes: int = 360
 
     questdb_host: str = "localhost"
     questdb_http_port: int = 9000
