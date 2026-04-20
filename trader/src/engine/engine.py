@@ -157,6 +157,15 @@ class Engine:
                     confidence_threshold=SIGNAL_CONFIDENCE_THRESHOLD,
                     block_horizons=SIGNAL_BLOCK_HORIZONS,
                 )
+                if blocked_symbols:
+                    self.log.info(
+                        "Signal gate: blocking buys for %s (bearish, conf>=%.2f, within %dh)",
+                        sorted(blocked_symbols),
+                        SIGNAL_CONFIDENCE_THRESHOLD,
+                        SIGNAL_LOOKBACK_HOURS,
+                    )
+                else:
+                    self.log.info("Signal gate: active, no bearish symbols blocked")
             except Exception:
                 self.log.warning("Signal gate fetch failed; proceeding without it")
 
