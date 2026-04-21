@@ -1,9 +1,9 @@
-# signal-service — Development
+# llm-signal — Development
 
 ## Setup
 
 ```bash
-cd auto/signal-service
+cd llm-signal
 python -m venv .venv
 source .venv/bin/activate
 pip install -e ".[dev]"
@@ -12,7 +12,7 @@ pip install -e ".[dev]"
 ## Running Locally
 
 ```bash
-cd auto/signal-service
+cd llm-signal
 source .venv/bin/activate
 
 LLM_API_KEY=your-key \
@@ -43,7 +43,7 @@ pytest tests/
 ## Project Layout
 
 ```
-signal-service/
+llm-signal/
   src/crypto_signal_service/
     main.py              # Entry point and main loop
     config.py            # All env-var config

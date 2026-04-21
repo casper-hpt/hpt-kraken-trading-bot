@@ -25,7 +25,7 @@ QuestDB (crypto_bars_15m)
    - Stop-loss: price falls ≥ 8% below entry
    - EMA bearish crossover (after minimum 8 bars held)
    - Profit-take tiers at +5% / +10% / +15% / +20% (sell 25% per tier, full exit at final tier)
-5. **LLM signal gate** (optional) — if `SIGNAL_GATE_ENABLED=true`, skips buys for symbols with recent bearish signals from the signal-service
+5. **LLM signal gate** (optional) — if `SIGNAL_GATE_ENABLED=true`, skips buys for symbols with recent bearish signals from the llm-signal service
 
 ## Key Configuration
 

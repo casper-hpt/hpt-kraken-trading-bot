@@ -11,6 +11,6 @@ scrape_configs:
     static_configs:
       - targets: ["trader:9095"]
 
-  - job_name: signal-service
+  - job_name: llm-signal
     static_configs:
-      - targets: ["signal-service:9093"]
+      - targets: ["llm-signal:9093"]

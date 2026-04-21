@@ -1,4 +1,4 @@
-# signal-service
+# llm-signal
 
 LLM-powered crypto news signal classifier. On each cycle it fetches headlines from RSS feeds and GDELT, classifies each item via an LLM into a structured signal, deduplicates, and writes results to QuestDB. The trader reads these signals to optionally gate buy decisions.
 

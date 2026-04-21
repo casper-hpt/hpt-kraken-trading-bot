@@ -7,6 +7,8 @@ Replaces the Kraken REST API client — all data comes from QuestDB instead.
 from __future__ import annotations
 
 import logging
+import math
+from datetime import datetime, timezone, timedelta
 from typing import Optional
 
 import pandas as pd
@@ -178,29 +180,24 @@ class QuestDBClient:
 
         return [str(row[0]) for row in rows]
 
-    def fetch_bearish_blocked_symbols(
+    def fetch_market_sentiment(
         self,
-        lookback_hours: int = 24,
-        confidence_threshold: float = 0.70,
-        block_horizons: set[str] | None = None,
-    ) -> set[str]:
-        """Return symbols with recent high-confidence bearish LLM signals.
+        confidence_threshold: float = 0.65,
+    ) -> tuple[float, float]:
+        """Compute weighted bullish and bearish market sentiment scores.
 
-        Degrades gracefully — returns empty set on any error so the trader
-        continues running without the signal gate.
+        Each signal is weighted by catalyst_score (novelty×confidence×tradability)
+        and a recency decay (24h half-life). Only signals whose fallout window
+        still covers today are included. Returns (bullish_score, bearish_score).
+        Degrades gracefully — returns (0.0, 0.0) on any error.
         """
-        horizons = block_horizons if block_horizons is not None else {"1-7d", "1-4w", "structural"}
-        if not horizons:
-            return set()
-
-        placeholders = ", ".join(f"'{h}'" for h in horizons)
         query = f"""
-            SELECT affected_symbols
+            SELECT direction, catalyst_score, ts, fallout_days
             FROM crypto_signals
-            WHERE direction = 'bearish'
+            WHERE direction IN ('bullish', 'bearish')
               AND confidence >= {confidence_threshold}
-              AND time_horizon IN ({placeholders})
-              AND ts >= dateadd('h', -{lookback_hours}, now())
+              AND ts >= dateadd('d', -90, now())
+            ORDER BY ts DESC
         """
         try:
             with self._connect() as conn:
@@ -208,15 +205,30 @@ class QuestDBClient:
                     cur.execute(query)
                     rows = cur.fetchall()
         except Exception:
-            self.log.warning("fetch_bearish_blocked_symbols failed; proceeding without signal gate")
-            return set()
+            self.log.warning("fetch_market_sentiment failed; proceeding without signal gate")
+            return (0.0, 0.0)
 
-        blocked: set[str] = set()
-        for row in rows:
-            raw = str(row[0]) if row[0] else ""
-            for sym in raw.split(","):
-                sym = sym.strip().upper()
-                if sym:
-                    blocked.add(sym)
-        return blocked
+        now = datetime.now(timezone.utc)
+        bullish_score = 0.0
+        bearish_score = 0.0
+
+        for direction, catalyst_score, ts, fallout_days in rows:
+            if fallout_days is None:
+                continue
+            if catalyst_score is None:
+                continue
+            # Make ts timezone-aware for comparison
+            if ts.tzinfo is None:
+                ts = ts.replace(tzinfo=timezone.utc)
+            if ts + timedelta(days=int(fallout_days)) < now:
+                continue  # fallout window has expired
+            age_hours = (now - ts).total_seconds() / 3600
+            recency = math.exp(-0.029 * age_hours)  # 24h half-life
+            weighted = float(catalyst_score) * recency
+            if direction == "bullish":
+                bullish_score += weighted
+            elif direction == "bearish":
+                bearish_score += weighted
+
+        return (bullish_score, bearish_score)
 

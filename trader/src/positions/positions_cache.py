@@ -23,6 +23,7 @@ class Position:
     bars_held: int = 0  # Number of 15-min bars since entry (for min_hold logic)
     initial_quantity: Optional[float] = None  # Original quantity at entry (for profit tiers)
     profit_tiers_taken: int = 0  # Number of profit-take tiers already executed
+    peak_price: Optional[float] = None  # Highest close seen since entry (for trailing stop)
 
 
 # ---- helpers ----
@@ -56,6 +57,7 @@ def _position_from_dict(d: dict[str, Any]) -> Position:
         bars_held=int(d.get("bars_held", 0)),
         initial_quantity=_coerce_float(d.get("initial_quantity"), "initial_quantity"),
         profit_tiers_taken=int(d.get("profit_tiers_taken", 0)),
+        peak_price=_coerce_float(d.get("peak_price"), "peak_price"),
     )
 
 

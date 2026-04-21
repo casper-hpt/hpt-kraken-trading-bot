@@ -21,9 +21,8 @@ from datetime import datetime, timedelta, timezone
 
 from src.config import (
     SIGNAL_GATE_ENABLED,
-    SIGNAL_LOOKBACK_HOURS,
     SIGNAL_CONFIDENCE_THRESHOLD,
-    SIGNAL_BLOCK_HORIZONS,
+    SIGNAL_BEARISH_RATIO_THRESHOLD,
 )
 from src.engine.ema_filter import EMAPair
 from src.engine.strategy import evaluate_positions
@@ -152,21 +151,19 @@ class Engine:
         block_all_buys = False
         if SIGNAL_GATE_ENABLED:
             try:
-                blocked_symbols = self.db_client.fetch_bearish_blocked_symbols(
-                    lookback_hours=SIGNAL_LOOKBACK_HOURS,
+                bullish_score, bearish_score = self.db_client.fetch_market_sentiment(
                     confidence_threshold=SIGNAL_CONFIDENCE_THRESHOLD,
-                    block_horizons=SIGNAL_BLOCK_HORIZONS,
                 )
-                if blocked_symbols:
-                    block_all_buys = True
-                    self.log.info(
-                        "Signal gate: ALL buys blocked — bearish signals for %s (conf>=%.2f, within %dh)",
-                        sorted(blocked_symbols),
-                        SIGNAL_CONFIDENCE_THRESHOLD,
-                        SIGNAL_LOOKBACK_HOURS,
-                    )
-                else:
-                    self.log.info("Signal gate: active, no bearish signals — buys open")
+                total = bullish_score + bearish_score + 1e-9
+                bearish_ratio = bearish_score / total
+                block_all_buys = bearish_ratio > SIGNAL_BEARISH_RATIO_THRESHOLD
+                self.log.info(
+                    "Signal gate: bullish=%.3f bearish=%.3f ratio=%.2f → buys %s",
+                    bullish_score,
+                    bearish_score,
+                    bearish_ratio,
+                    "BLOCKED" if block_all_buys else "OPEN",
+                )
             except Exception:
                 self.log.warning("Signal gate fetch failed; proceeding without it")
 

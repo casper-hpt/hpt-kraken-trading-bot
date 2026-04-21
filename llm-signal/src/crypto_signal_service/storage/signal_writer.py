@@ -37,6 +37,7 @@ class SignalWriter:
                 "novelty": float(s.novelty),
                 "tradability": float(s.tradability),
                 "catalyst_score": float(s.catalyst_score),
+                "fallout_days": int(s.fallout_days),
                 "key_reason": s.key_reason,
                 "headline": s.headline,
                 "source_url": s.source_url,

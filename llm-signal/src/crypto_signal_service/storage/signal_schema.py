@@ -18,6 +18,7 @@ _DDL = """CREATE TABLE IF NOT EXISTS crypto_signals (
     novelty           DOUBLE,
     tradability       DOUBLE,
     catalyst_score    DOUBLE,
+    fallout_days      LONG,
     key_reason        STRING,
     headline          STRING,
     source_url        STRING,

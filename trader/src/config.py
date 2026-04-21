@@ -57,9 +57,9 @@ SLIP = 0.005
 MIN_HOLD_BARS = 8
 STOP_LOSS_PCT = float(os.getenv("STOP_LOSS_PCT", "0.08"))
 
-_tiers_raw = os.getenv("PROFIT_TAKE_TIERS", "0.05,0.10,0.15,0.20")
+_tiers_raw = os.getenv("PROFIT_TAKE_TIERS", "0.10,0.20")
 PROFIT_TAKE_TIERS = [float(t.strip()) for t in _tiers_raw.split(",")]
-PROFIT_TAKE_FRACTION = float(os.getenv("PROFIT_TAKE_FRACTION", "0.25"))
+PROFIT_TAKE_FRACTION = float(os.getenv("PROFIT_TAKE_FRACTION", "0.50"))
 
 BARS_PER_DAY = 96  # 24h × 4 bars/hour (15-min bars, crypto 24/7)
 
@@ -74,10 +74,9 @@ LIMIT_ORDER_DRIFT_PCT = float(os.getenv("LIMIT_ORDER_DRIFT_PCT", "0.005"))
 LIMIT_ORDER_MAX_RETRIES = int(os.getenv("LIMIT_ORDER_MAX_RETRIES", "5"))
 
 # ── LLM signal gate ──────────────────────────────────────────────────────────
-SIGNAL_GATE_ENABLED         = os.getenv("SIGNAL_GATE_ENABLED", "false").lower() == "true"
-SIGNAL_LOOKBACK_HOURS       = int(os.getenv("SIGNAL_LOOKBACK_HOURS", "24"))
-SIGNAL_CONFIDENCE_THRESHOLD = float(os.getenv("SIGNAL_CONFIDENCE_THRESHOLD", "0.70"))
-SIGNAL_BLOCK_HORIZONS       = set(os.getenv("SIGNAL_BLOCK_HORIZONS", "1-7d,1-4w,structural").split(","))
+SIGNAL_GATE_ENABLED            = os.getenv("SIGNAL_GATE_ENABLED", "false").lower() == "true"
+SIGNAL_CONFIDENCE_THRESHOLD    = float(os.getenv("SIGNAL_CONFIDENCE_THRESHOLD", "0.65"))
+SIGNAL_BEARISH_RATIO_THRESHOLD = float(os.getenv("SIGNAL_BEARISH_RATIO_THRESHOLD", "0.6"))
 
 
 # ── Coin list ────────────────────────────────────────────────────────────────

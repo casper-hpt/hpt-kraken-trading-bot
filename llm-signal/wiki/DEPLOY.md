@@ -1,11 +1,11 @@
-# signal-service — Deployment
+# llm-signal — Deployment
 
 ## Docker (local)
 
 ```bash
 # From repo root
-docker compose up -d signal-service
-docker compose logs -f signal-service
+docker compose up -d llm-signal
+docker compose logs -f llm-signal
 ```
 
 ## Google Cloud Artifact Registry
@@ -23,26 +23,26 @@ REGISTRY=northamerica-northeast2-docker.pkg.dev/home-2apollo/home-2apollo-quant
 
 # Apple Silicon → must cross-compile for amd64
 docker build --platform linux/amd64 \
-  -t $REGISTRY/signal-service:latest \
-  auto/signal-service/
+  -t $REGISTRY/llm-signal:latest \
+  llm-signal/
 
-docker push $REGISTRY/signal-service:latest
+docker push $REGISTRY/llm-signal:latest
 ```
 
 ### Update running deployment
 
 ```bash
-kubectl rollout restart deployment/signal-service
-kubectl rollout status deployment/signal-service
-kubectl logs -f deployment/signal-service
+kubectl rollout restart deployment/llm-signal
+kubectl rollout status deployment/llm-signal
+kubectl logs -f deployment/llm-signal
 ```
 
 ## Kubernetes Secrets
 
-The signal-service requires the LLM API key as a K8s secret:
+The llm-signal service requires the LLM API key as a K8s secret:
 
 ```bash
-kubectl create secret generic signal-service-secret \
+kubectl create secret generic llm-signal-secret \
   --from-literal=LLM_API_KEY='your-llm-api-key'
 ```
 

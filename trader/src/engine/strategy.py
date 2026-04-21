@@ -163,13 +163,18 @@ def evaluate_positions(
                 bars_held=pos.bars_held + 1,
                 initial_quantity=pos.initial_quantity,
                 profit_tiers_taken=pos.profit_tiers_taken,
+                peak_price=pos.peak_price,
             )
             continue
 
-        # Stop-loss: sell immediately if price drops >= STOP_LOSS_PCT below entry
+        # Update trailing peak
+        current_close = sig["close"]
+        new_peak = max(filter(None, [pos.peak_price, pos.entry_price, current_close]))
+
+        # Trailing stop-loss: sell if price drops >= STOP_LOSS_PCT below the peak
         stop_loss_sell = False
-        if pos.entry_price is not None and pos.entry_price > 0:
-            loss_pct = (sig["close"] - pos.entry_price) / pos.entry_price
+        if new_peak > 0:
+            loss_pct = (current_close - new_peak) / new_peak
             if loss_pct <= -STOP_LOSS_PCT:
                 stop_loss_sell = True
 
@@ -190,7 +195,7 @@ def evaluate_positions(
             )
             new_symbols[slot_idx] = CASH_SYMBOL
             cash_slots.append(slot_idx)
-            reason = f"STOP_LOSS({loss_pct:+.1%})" if stop_loss_sell else "EMA bearish crossover"
+            reason = f"TRAILING_STOP({loss_pct:+.1%}, peak={new_peak:.4f})" if stop_loss_sell else "EMA bearish crossover"
             log.info(
                 "SELL %s (slot %d) — %s after %d bars",
                 coin,
@@ -256,10 +261,11 @@ def evaluate_positions(
                     weight=pos.weight,
                     entry_price=pos.entry_price,
                     entry_ts=pos.entry_ts,
-                    current_price=sig["close"],
+                    current_price=current_close,
                     updated_at=now,
                     bars_held=pos.bars_held + 1,
                     profit_tiers_taken=new_tiers_taken,
+                    peak_price=new_peak,
                 )
 
     # 5b. Buy candidates: momentum > BUY_THRESH and trend_ok
@@ -292,6 +298,7 @@ def evaluate_positions(
             current_price=sig["close"],
             updated_at=now,
             bars_held=0,
+            peak_price=sig["close"],
         )
         new_symbols[slot_idx] = sym
         log.info(

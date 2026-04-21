@@ -36,7 +36,11 @@ _SYSTEM_PROMPT = (
     "- confidence: float 0-1 (how confident you are in this classification)\n"
     "- novelty: float 0-1 (how novel/surprising is this news)\n"
     "- tradability: float 0-1 (how likely to move the market)\n"
-    "- key_reason: one sentence explaining the classification\n\n"
+    "- key_reason: one sentence explaining the classification\n"
+    "- fallout_days: integer 1-90, how many days this event will continue to impact the crypto market. "
+    "For hacks: small (<$10M)=2, medium ($10M-$100M)=5, large (>$100M)=14. "
+    "For regulatory: minor=3, major=30. For macro: short-term=2, structural=60. "
+    "For neutral/unclear events use 1.\n\n"
     "Respond ONLY with the JSON object, no other text."
 )
 
@@ -54,6 +58,7 @@ class CryptoSignal:
     novelty: float
     tradability: float
     catalyst_score: float  # novelty * confidence * tradability
+    fallout_days: int
     key_reason: str
     headline: str
     source_url: str
@@ -140,6 +145,11 @@ class LLMClassifier:
             log.warning("LLM returned non-numeric scores for signal_id=%s", item.signal_id)
             return None
 
+        try:
+            fallout_days = max(1, min(90, int(data.get("fallout_days", 1))))
+        except (TypeError, ValueError):
+            fallout_days = 1
+
         affected = data.get("affected_symbols", [])
         if not isinstance(affected, list):
             affected = []
@@ -157,6 +167,7 @@ class LLMClassifier:
             novelty=novelty,
             tradability=tradability,
             catalyst_score=novelty * confidence * tradability,
+            fallout_days=fallout_days,
             key_reason=str(data.get("key_reason", "")),
             headline=item.title,
             source_url=item.source_url,

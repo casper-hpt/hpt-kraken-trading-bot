@@ -26,7 +26,7 @@ Everything else has a working default and can be left as-is.
 docker compose up -d
 ```
 
-This starts: QuestDB, data-collector, trader, signal-service, prometheus, grafana.
+This starts: QuestDB, data-collector, trader, llm-signal, prometheus, grafana.
 
 ## 3. Verify
 
@@ -46,7 +46,7 @@ docker compose logs -f     # stream all logs
 **View logs for one service:**
 ```bash
 docker compose logs -f trader
-docker compose logs -f signal-service
+docker compose logs -f llm-signal
 docker compose logs -f data-collector
 ```
 

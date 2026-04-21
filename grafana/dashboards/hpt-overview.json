@@ -26,7 +26,7 @@
       "id": 1,
       "title": "Service Health",
       "type": "stat",
-      "gridPos": { "h": 4, "w": 24, "x": 0, "y": 0 },
+      "gridPos": { "h": 3, "w": 24, "x": 0, "y": 0 },
       "targets": [{ "expr": "up", "legendFormat": "{{job}}" }],
       "fieldConfig": {
         "defaults": {
@@ -41,22 +41,30 @@
       "id": 100,
       "title": "Strategy",
       "type": "row",
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 4 },
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 3 },
       "collapsed": false
     },
     {
       "id": 2,
       "title": "Active Positions",
       "type": "timeseries",
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 5 },
+      "gridPos": { "h": 6, "w": 12, "x": 0, "y": 4 },
       "targets": [{ "expr": "analyst_active_positions", "legendFormat": "{{job}}" }],
       "fieldConfig": { "defaults": { "custom": { "fillOpacity": 20 } } }
+    },
+    {
+      "id": 5,
+      "title": "Rebalance Cycles (per minute)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 12, "x": 12, "y": 4 },
+      "targets": [{ "expr": "rate(analyst_rebalance_cycles_total[5m]) * 60", "legendFormat": "{{job}}" }],
+      "fieldConfig": { "defaults": { "custom": { "fillOpacity": 10 } } }
     },
     {
       "id": 3,
       "title": "Buy / Sell Rate (per minute)",
       "type": "timeseries",
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 13 },
+      "gridPos": { "h": 6, "w": 12, "x": 0, "y": 10 },
       "targets": [
         { "expr": "rate(analyst_cycle_buys_total[5m]) * 60", "legendFormat": "{{job}} buys/min" },
         { "expr": "rate(analyst_cycle_sells_total[5m]) * 60", "legendFormat": "{{job}} sells/min" }
@@ -64,21 +72,71 @@
       "fieldConfig": { "defaults": { "custom": { "fillOpacity": 10 } } }
     },
     {
-      "id": 5,
-      "title": "Rebalance Cycles (per minute)",
-      "type": "timeseries",
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 13 },
-      "targets": [{ "expr": "rate(analyst_rebalance_cycles_total[5m]) * 60", "legendFormat": "{{job}}" }],
-      "fieldConfig": { "defaults": { "custom": { "fillOpacity": 10 } } }
-    },
-    {
       "id": 4,
       "title": "Rebalance Cycle Duration (seconds)",
       "type": "timeseries",
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 21 },
+      "gridPos": { "h": 6, "w": 12, "x": 12, "y": 10 },
       "targets": [{ "expr": "analyst_rebalance_cycle_duration_seconds", "legendFormat": "{{job}}" }],
       "fieldConfig": { "defaults": { "unit": "s", "custom": { "fillOpacity": 10 } } }
     },
+
+    {
+      "id": 102,
+      "title": "Traders",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 16 },
+      "collapsed": false
+    },
+    {
+      "id": 10,
+      "title": "Buys Attempted vs Succeeded",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 12, "x": 0, "y": 17 },
+      "targets": [
+        { "expr": "rate(trader_buys_attempted_total[5m]) * 60", "legendFormat": "{{job}} attempted/min" },
+        { "expr": "rate(trader_buys_succeeded_total[5m]) * 60", "legendFormat": "{{job}} succeeded/min" }
+      ],
+      "fieldConfig": { "defaults": { "custom": { "fillOpacity": 10 } } }
+    },
+    {
+      "id": 11,
+      "title": "Sells Attempted vs Succeeded",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 12, "x": 12, "y": 17 },
+      "targets": [
+        { "expr": "rate(trader_sells_attempted_total[5m]) * 60", "legendFormat": "{{job}} attempted/min" },
+        { "expr": "rate(trader_sells_succeeded_total[5m]) * 60", "legendFormat": "{{job}} succeeded/min" }
+      ],
+      "fieldConfig": { "defaults": { "custom": { "fillOpacity": 10 } } }
+    },
+    {
+      "id": 12,
+      "title": "Trader Errors (per minute)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 12, "x": 0, "y": 23 },
+      "targets": [
+        { "expr": "rate(trader_errors_total[5m]) * 60", "legendFormat": "{{job}}" }
+      ],
+      "fieldConfig": { "defaults": { "color": { "mode": "fixed", "fixedColor": "red" }, "custom": { "fillOpacity": 20 } } }
+    },
+    {
+      "id": 27,
+      "title": "Crypto Order Slippage",
+      "description": "Fill price minus strategy entry price per symbol. Positive = paid more than expected.",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 12, "x": 12, "y": 23 },
+      "targets": [{ "expr": "trader_order_slippage{job=\"crypto-trader\"}", "legendFormat": "{{symbol}}" }],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyUSD",
+          "decimals": 4,
+          "custom": { "fillOpacity": 10, "gradientMode": "scheme", "lineWidth": 2 },
+          "thresholds": { "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 0 }, { "color": "red", "value": 0.01 }] },
+          "color": { "mode": "thresholds" }
+        }
+      }
+    },
+
     {
       "id": 101,
       "title": "Data Collectors",
@@ -90,21 +148,21 @@
       "id": 6,
       "title": "Bars Inserted (per minute)",
       "type": "timeseries",
-      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 30 },
+      "gridPos": { "h": 6, "w": 12, "x": 0, "y": 30 },
       "targets": [{ "expr": "rate(collector_bars_inserted_total[5m]) * 60", "legendFormat": "{{job}}" }]
     },
     {
       "id": 9,
       "title": "Watchlist Size",
       "type": "timeseries",
-      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 30 },
+      "gridPos": { "h": 6, "w": 12, "x": 12, "y": 30 },
       "targets": [{ "expr": "collector_watchlist_size", "legendFormat": "{{job}}" }]
     },
     {
       "id": 7,
       "title": "API Errors (per minute)",
       "type": "timeseries",
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 38 },
+      "gridPos": { "h": 6, "w": 12, "x": 0, "y": 36 },
       "targets": [{ "expr": "rate(collector_api_errors_total[5m]) * 60", "legendFormat": "{{job}}" }],
       "fieldConfig": { "defaults": { "color": { "mode": "fixed", "fixedColor": "red" }, "custom": { "fillOpacity": 20 } } }
     },
@@ -112,85 +170,23 @@
       "id": 8,
       "title": "Cycle Duration (seconds)",
       "type": "timeseries",
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 38 },
+      "gridPos": { "h": 6, "w": 12, "x": 12, "y": 36 },
       "targets": [{ "expr": "collector_cycle_duration_seconds", "legendFormat": "{{job}}" }],
       "fieldConfig": { "defaults": { "unit": "s", "custom": { "fillOpacity": 10 } } }
     },
 
     {
-      "id": 102,
-      "title": "Traders",
-      "type": "row",
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 46 },
-      "collapsed": false
-    },
-    {
-      "id": 10,
-      "title": "Buys Attempted vs Succeeded",
-      "type": "timeseries",
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 47 },
-      "targets": [
-        { "expr": "rate(trader_buys_attempted_total[5m]) * 60", "legendFormat": "{{job}} attempted/min" },
-        { "expr": "rate(trader_buys_succeeded_total[5m]) * 60", "legendFormat": "{{job}} succeeded/min" }
-      ],
-      "fieldConfig": { "defaults": { "custom": { "fillOpacity": 10 } } }
-    },
-    {
-      "id": 11,
-      "title": "Sells Attempted vs Succeeded",
-      "type": "timeseries",
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 47 },
-      "targets": [
-        { "expr": "rate(trader_sells_attempted_total[5m]) * 60", "legendFormat": "{{job}} attempted/min" },
-        { "expr": "rate(trader_sells_succeeded_total[5m]) * 60", "legendFormat": "{{job}} succeeded/min" }
-      ],
-      "fieldConfig": { "defaults": { "custom": { "fillOpacity": 10 } } }
-    },
-    {
-      "id": 12,
-      "title": "Trader Errors (per minute)",
-      "type": "timeseries",
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 55 },
-      "targets": [
-        { "expr": "rate(trader_errors_total[5m]) * 60", "legendFormat": "{{job}}" }
-      ],
-      "fieldConfig": { "defaults": { "color": { "mode": "fixed", "fixedColor": "red" }, "custom": { "fillOpacity": 20 } } }
-    },
-    {
       "id": 103,
-      "title": "Unrealized P&L",
+      "title": "Positions & P&L",
       "type": "row",
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 75 },
-      "collapsed": false
-    },
-    {
-      "id": 14,
-      "title": "Crypto Unrealized P&L",
-      "type": "timeseries",
-      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 76 },
-      "targets": [{ "expr": "analyst_position_unrealized_pnl{job=\"crypto-trader\"}", "legendFormat": "{{symbol}} (slot {{slot_id}})" }],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "percentunit",
-          "custom": { "fillOpacity": 10, "gradientMode": "scheme" },
-          "thresholds": { "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 0 }] },
-          "color": { "mode": "thresholds" }
-        }
-      }
-    },
-
-    {
-      "id": 104,
-      "title": "Open Positions",
-      "type": "row",
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 84 },
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 42 },
       "collapsed": false
     },
     {
       "id": 16,
       "title": "Crypto Positions",
       "type": "table",
-      "gridPos": { "h": 10, "w": 12, "x": 0, "y": 85 },
+      "gridPos": { "h": 9, "w": 12, "x": 0, "y": 43 },
       "targets": [
         { "expr": "analyst_position_entry_price{job=\"crypto-trader\"}", "instant": true, "format": "table", "refId": "A" },
         { "expr": "analyst_position_current_price{job=\"crypto-trader\"}", "instant": true, "format": "table", "refId": "B" },
@@ -200,32 +196,18 @@
       "transformations": [
         {
           "id": "filterFieldsByName",
-          "options": {
-            "include": {
-              "pattern": "^(symbol|slot_id|Value .*)$"
-            }
-          }
+          "options": { "include": { "pattern": "^(symbol|slot_id|Value .*)$" } }
         },
         { "id": "merge" },
         {
           "id": "organize",
           "options": {
             "renameByName": {
-              "symbol": "Symbol",
-              "slot_id": "Slot",
-              "Value #A": "Entry Price",
-              "Value #B": "Current Price",
-              "Value #C": "Unrealized PnL",
-              "Value #D": "Bars Held"
+              "symbol": "Symbol", "slot_id": "Slot",
+              "Value #A": "Entry Price", "Value #B": "Current Price",
+              "Value #C": "Unrealized PnL", "Value #D": "Bars Held"
             },
-            "indexByName": {
-              "Symbol": 0,
-              "Slot": 1,
-              "Entry Price": 2,
-              "Current Price": 3,
-              "Unrealized PnL": 4,
-              "Bars Held": 5
-            }
+            "indexByName": { "Symbol": 0, "Slot": 1, "Entry Price": 2, "Current Price": 3, "Unrealized PnL": 4, "Bars Held": 5 }
           }
         }
       ],
@@ -234,8 +216,7 @@
           {
             "matcher": { "id": "byName", "options": "Unrealized PnL" },
             "properties": [
-              { "id": "unit", "value": "percentunit" },
-              { "id": "decimals", "value": 2 },
+              { "id": "unit", "value": "percentunit" }, { "id": "decimals", "value": 2 },
               { "id": "custom.cellOptions", "value": { "type": "color-background" } },
               { "id": "color", "value": { "mode": "thresholds" } },
               { "id": "thresholds", "value": { "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 0 }] } }
@@ -252,19 +233,11 @@
         ]
       }
     },
-
-    {
-      "id": 105,
-      "title": "Momentum & Signals",
-      "type": "row",
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 95 },
-      "collapsed": false
-    },
     {
       "id": 18,
       "title": "Crypto Momentum Scores",
       "type": "table",
-      "gridPos": { "h": 10, "w": 12, "x": 0, "y": 96 },
+      "gridPos": { "h": 9, "w": 12, "x": 12, "y": 43 },
       "targets": [
         { "expr": "analyst_symbol_momentum_score{job=\"crypto-trader\"}", "instant": true, "format": "table", "refId": "A" },
         { "expr": "analyst_symbol_trend_ok{job=\"crypto-trader\"}", "instant": true, "format": "table", "refId": "B" }
@@ -272,32 +245,17 @@
       "transformations": [
         {
           "id": "filterFieldsByName",
-          "options": {
-            "include": {
-              "pattern": "^(symbol|Value .*)$"
-            }
-          }
+          "options": { "include": { "pattern": "^(symbol|Value .*)$" } }
         },
         { "id": "merge" },
         {
           "id": "organize",
           "options": {
-            "renameByName": {
-              "symbol": "Symbol",
-              "Value #A": "Momentum Score",
-              "Value #B": "Trend OK"
-            },
-            "indexByName": {
-              "Symbol": 0,
-              "Momentum Score": 1,
-              "Trend OK": 2
-            }
+            "renameByName": { "symbol": "Symbol", "Value #A": "Momentum Score", "Value #B": "Trend OK" },
+            "indexByName": { "Symbol": 0, "Momentum Score": 1, "Trend OK": 2 }
           }
         },
-        {
-          "id": "sortBy",
-          "options": { "sort": [{ "field": "Momentum Score", "desc": true }] }
-        }
+        { "id": "sortBy", "options": { "sort": [{ "field": "Momentum Score", "desc": true }] } }
       ],
       "fieldConfig": {
         "defaults": { "decimals": 4 },
@@ -323,20 +281,27 @@
         ]
       }
     },
-
     {
-      "id": 106,
-      "title": "Data Freshness",
-      "type": "row",
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 114 },
-      "collapsed": false
+      "id": 14,
+      "title": "Crypto Unrealized P&L",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 12, "x": 0, "y": 52 },
+      "targets": [{ "expr": "analyst_position_unrealized_pnl{job=\"crypto-trader\"}", "legendFormat": "{{symbol}} (slot {{slot_id}})" }],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "custom": { "fillOpacity": 10, "gradientMode": "scheme" },
+          "thresholds": { "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 0 }] },
+          "color": { "mode": "thresholds" }
+        }
+      }
     },
     {
       "id": 20,
       "title": "Crypto Data Freshness",
       "description": "How old each symbol's latest bar is (in minutes), sorted by age.",
       "type": "table",
-      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 115 },
+      "gridPos": { "h": 6, "w": 12, "x": 12, "y": 52 },
       "targets": [{ "expr": "(time() - analyst_symbol_last_bar_ts{job=\"crypto-trader\"}) / 60", "instant": true, "format": "table", "refId": "A" }],
       "transformations": [
         {
@@ -346,10 +311,7 @@
             "renameByName": { "symbol": "Symbol", "Value": "Data Age (min)" }
           }
         },
-        {
-          "id": "sortBy",
-          "options": { "sort": [{ "field": "Data Age (min)", "desc": false }] }
-        }
+        { "id": "sortBy", "options": { "sort": [{ "field": "Data Age (min)", "desc": false }] } }
       ],
       "fieldConfig": {
         "defaults": { "decimals": 0 },
@@ -364,31 +326,6 @@
             ]
           }
         ]
-      }
-    },
-
-    {
-      "id": 107,
-      "title": "Order Slippage",
-      "type": "row",
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 123 },
-      "collapsed": false
-    },
-    {
-      "id": 27,
-      "title": "Crypto Order Slippage",
-      "description": "Fill price minus strategy entry price per symbol. Positive = paid more than expected.",
-      "type": "timeseries",
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 124 },
-      "targets": [{ "expr": "trader_order_slippage{job=\"crypto-trader\"}", "legendFormat": "{{symbol}}" }],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "currencyUSD",
-          "decimals": 4,
-          "custom": { "fillOpacity": 10, "gradientMode": "scheme", "lineWidth": 2 },
-          "thresholds": { "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 0 }, { "color": "red", "value": 0.01 }] },
-          "color": { "mode": "thresholds" }
-        }
       }
     }
   ],

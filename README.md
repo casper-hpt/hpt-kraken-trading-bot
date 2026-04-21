@@ -7,7 +7,7 @@
 auto/
   data-collector/   # Ingests crypto 15m bars from Kraken into QuestDB
   trader/           # Momentum + EMA strategy + Kraken trade execution
-  signal-service/   # LLM-powered news signal classifier
+  llm-signal/       # LLM-powered news signal classifier
   grafana/          # Grafana dashboard provisioning
   prometheus/       # Prometheus scrape config
 web/                # React web UI (watchlist + service controls)
@@ -20,7 +20,7 @@ KUBE_DEPLOY.md      # Kubernetes deployment guide
 ```
 [data-collector] → QuestDB → [trader] → Kraken API
                                   ↑
-                           [signal-service] → QuestDB (signals)
+                           [llm-signal] → QuestDB (signals)
                                   ↓
                            Prometheus ← scrape
                                   ↓
@@ -28,7 +28,7 @@ KUBE_DEPLOY.md      # Kubernetes deployment guide
 ```
 
 - **data-collector** polls Kraken on a 15-min schedule, writes OHLCV bars to QuestDB
-- **signal-service** fetches crypto news (RSS + GDELT), classifies via LLM, writes structured signals to QuestDB
+- **llm-signal** fetches crypto news (RSS + GDELT), classifies via LLM, writes structured signals to QuestDB
 - **trader** reads bars and signals from QuestDB, evaluates momentum + EMA strategy, executes trades on Kraken
 
 ## Tech Stack
@@ -60,7 +60,7 @@ Services start at:
 |---------|------|-----|--------|
 | data-collector | [INFO](auto/data-collector/wiki/INFO.md) | [DEV](auto/data-collector/wiki/DEV.md) | [DEPLOY](auto/data-collector/wiki/DEPLOY.md) |
 | trader | [INFO](auto/trader/wiki/INFO.md) | [DEV](auto/trader/wiki/DEV.md) | [DEPLOY](auto/trader/wiki/DEPLOY.md) |
-| signal-service | [INFO](auto/signal-service/wiki/INFO.md) | [DEV](auto/signal-service/wiki/DEV.md) | [DEPLOY](auto/signal-service/wiki/DEPLOY.md) |
+| llm-signal | [INFO](llm-signal/wiki/INFO.md) | [DEV](llm-signal/wiki/DEV.md) | [DEPLOY](llm-signal/wiki/DEPLOY.md) |
 
 ## Deployment
 
