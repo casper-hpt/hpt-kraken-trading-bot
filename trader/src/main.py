@@ -52,7 +52,7 @@ def _setup_logging() -> logging.Logger:
 
 
 def cmd_refit() -> None:
-    from trader.src.engine.ema_refit import refit_ema_params
+    from src.engine.ema_refit import refit_ema_params
 
     log = _setup_logging()
     log.info("EMA refit job starting ...")
