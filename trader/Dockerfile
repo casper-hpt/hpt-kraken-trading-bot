@@ -18,7 +18,8 @@ WORKDIR /app
 # Non-root user
 RUN useradd -m -u 10001 appuser \
  && chown -R appuser:appuser /app \
- && mkdir -p /data && chown appuser:appuser /data
+ && mkdir -p /data && chown appuser:appuser /data \
+ && mkdir -p /app/src/data && chown appuser:appuser /app/src/data
 
 # ── install deps (cached layer) ──
 COPY requirements/requirements-t.txt ./requirements/requirements-t.txt
