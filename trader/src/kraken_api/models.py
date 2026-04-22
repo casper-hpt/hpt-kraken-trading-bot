@@ -140,6 +140,7 @@ class KrakenOrderInfo(BaseModel):
     price: Optional[Decimal] = None
     vol_exec: Optional[Decimal] = None
     cost: Optional[Decimal] = None
+    fee: Optional[Decimal] = None
 
     @classmethod
     def from_api_response(cls, data: dict) -> "KrakenOrderInfo":
@@ -149,4 +150,5 @@ class KrakenOrderInfo(BaseModel):
             price=safe_decimal(data.get("price")) or None,
             vol_exec=safe_decimal(data.get("vol_exec")) or None,
             cost=safe_decimal(data.get("cost")) or None,
+            fee=safe_decimal(data.get("fee")) or None,
         )

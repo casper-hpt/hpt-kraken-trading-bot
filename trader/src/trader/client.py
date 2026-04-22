@@ -357,11 +357,16 @@ class KrakenTrader:
                     orders = self.client.query_orders(txids)
                     for txid, info in orders.items():
                         if info.status == "closed":
-                            fill_price = float(info.price) if info.price else limit_price
+                            if info.vol_exec and float(info.vol_exec) > 0:
+                                cost = float(info.cost or 0)
+                                fee = float(info.fee or 0)
+                                fill_price = (cost + fee) / float(info.vol_exec)
+                            else:
+                                fill_price = float(info.price) if info.price else limit_price
                             self.log.info(
                                 f"Limit order filled for {side.upper()} {symbol}: "
-                                f"txid={txid}, fill_price={fill_price:.6g}, "
-                                f"vol_exec={info.vol_exec}, cost={info.cost}"
+                                f"txid={txid}, fill_price={fill_price:.6g} (fee-inclusive), "
+                                f"vol_exec={info.vol_exec}, cost={info.cost}, fee={info.fee}"
                             )
                             return fill_price
 
@@ -430,9 +435,12 @@ class KrakenTrader:
             except Exception as e:
                 self.log.warning(f"Failed to cancel order {txid} for {symbol}: {e}")
 
-    def execute_weighted_buy(self, symbol: str, weight: float, entry_price: float = 0.0) -> bool:
+    def execute_weighted_buy(self, symbol: str, weight: float, entry_price: float = 0.0) -> "Optional[float]":
         """
         Execute a limit buy order using portfolio weight to calculate dollar amount.
+
+        Returns the fee-inclusive fill price on success, None on failure.
+        Dry-run returns entry_price as a pass-through (no real fill).
 
         The limit price is set to the current best bid so the order rests on
         the book (maker fee). If the order doesn't fill within the timeout
@@ -447,7 +455,7 @@ class KrakenTrader:
 
         if self.dry_run:
             self.log.info(f"[DRY RUN] Would buy {symbol} with weight {weight:.4f}")
-            return True
+            return entry_price
 
         try:
             portfolio = self.get_portfolio()
@@ -496,7 +504,7 @@ class KrakenTrader:
 
             if fill_price is None:
                 self.log.error(f"BUY limit order for {symbol} did not fill")
-                return False
+                return None
 
             if entry_price > 0:
                 slippage = fill_price - entry_price
@@ -504,16 +512,16 @@ class KrakenTrader:
                 ORDER_SLIPPAGE.labels(symbol=symbol).set(slippage)
                 self.log.info(
                     f"[SLIPPAGE] {symbol}: strategy=${entry_price:.4f} "
-                    f"fill=${fill_price:.4f} diff=${slippage:+.4f} ({slippage_pct:+.2f}%)"
+                    f"fill=${fill_price:.4f} (fee-inclusive) diff=${slippage:+.4f} ({slippage_pct:+.2f}%)"
                 )
 
-            return True
+            return fill_price
 
         except KrakenInsufficientFundsError:
             raise
         except Exception as e:
             self.log.error(f"Failed to execute BUY for {symbol}: {e}", exc_info=True)
-            return False
+            return None
 
     def execute_fractional_sell(self, symbol: str, fraction: float) -> bool:
         """Sell a fraction (e.g., 0.25 = 25%) of the current position via limit order."""

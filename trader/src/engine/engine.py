@@ -35,7 +35,7 @@ from src.metrics import (
     SELLS_SUCCEEDED_TOTAL,
     ERRORS_TOTAL,
 )
-from src.positions.positions_cache import CASH_SYMBOL, load_positions, save_positions
+from src.positions.positions_cache import CASH_SYMBOL, Position, load_positions, save_positions
 from src.trader.client import KrakenTrader
 
 
@@ -218,7 +218,7 @@ class Engine:
         save_positions(new_positions, self.positions_path)
 
         if new_buys or new_sells or partial_sells:
-            self._execute_trades(new_buys, new_sells, partial_sells)
+            self._execute_trades(new_buys, new_sells, partial_sells, new_positions)
         else:
             self.log.info("No trades this cycle.")
 
@@ -238,6 +238,7 @@ class Engine:
         new_buys: list[dict],
         new_sells: list[dict],
         partial_sells: list[dict],
+        new_positions: list[Position],
     ) -> None:
         """Execute partial sells, full sells, then buys."""
 
@@ -282,18 +283,33 @@ class Engine:
                 self.log.exception("Fiat conversion failed")
 
         # 5. Buys
+        positions_updated = False
         for buy in new_buys:
             BUYS_ATTEMPTED_TOTAL.inc()
             try:
-                ok = self.trader.execute_weighted_buy(
+                fill_price = self.trader.execute_weighted_buy(
                     symbol=buy["symbol"],
                     weight=buy["weight"],
                     entry_price=buy["entry_price"] or 0.0,
                 )
-                if ok:
+                if fill_price is not None:
                     BUYS_SUCCEEDED_TOTAL.inc()
+                    if fill_price > 0:
+                        for pos in new_positions:
+                            if pos.id == buy["slot_id"]:
+                                pos.entry_price = fill_price
+                                pos.peak_price = fill_price
+                                positions_updated = True
+                                self.log.info(
+                                    "Updated entry_price for %s slot %s → %.6g (fee-inclusive)",
+                                    buy["symbol"], pos.id, fill_price,
+                                )
+                                break
                 else:
                     ERRORS_TOTAL.inc()
             except Exception:
                 self.log.exception("Buy failed for %s", buy["symbol"])
                 ERRORS_TOTAL.inc()
+
+        if positions_updated:
+            save_positions(new_positions, self.positions_path)
