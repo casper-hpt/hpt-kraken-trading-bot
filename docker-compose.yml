@@ -50,7 +50,6 @@ services:
       QUESTDB_PASSWORD: quest
       QUESTDB_DBNAME: qdb
       PROMETHEUS_PORT: "9095"
-      CYCLE_INTERVAL: "15"
       MAX_POSITIONS: "5"
       SETTLEMENT_DELAY_SECONDS: "5.0"
       POSITIONS_PATH: /data/positions.json
