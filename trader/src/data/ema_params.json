@@ -1,126 +1,182 @@
 {
   "AAVE": {
-    "fast_ema": 1000,
-    "slow_ema": 1500
+    "fast_ema": 10,
+    "slow_ema": 20
   },
   "ADA": {
-    "fast_ema": 1000,
-    "slow_ema": 1200
+    "fast_ema": 20,
+    "slow_ema": 50
   },
   "ALGO": {
-    "fast_ema": 300,
+    "fast_ema": 5,
+    "slow_ema": 300
+  },
+  "APT": {
+    "fast_ema": 5,
+    "slow_ema": 100
+  },
+  "ARB": {
+    "fast_ema": 800,
     "slow_ema": 2000
   },
   "ATOM": {
-    "fast_ema": 1000,
-    "slow_ema": 2000
+    "fast_ema": 200,
+    "slow_ema": 600
   },
   "AVAX": {
     "fast_ema": 500,
-    "slow_ema": 700
-  },
-  "BCH": {
-    "fast_ema": 200,
-    "slow_ema": 300
-  },
-  "BTC": {
-    "fast_ema": 1000,
-    "slow_ema": 2000
-  },
-  "DOGE": {
-    "fast_ema": 900,
-    "slow_ema": 2000
-  },
-  "DOT": {
-    "fast_ema": 1000,
-    "slow_ema": 1600
-  },
-  "ENA": {
-    "fast_ema": 100,
     "slow_ema": 1200
   },
-  "ETC": {
-    "fast_ema": 300,
-    "slow_ema": 400
+  "BCH": {
+    "fast_ema": 10,
+    "slow_ema": 50
   },
-  "ETH": {
-    "fast_ema": 900,
-    "slow_ema": 1400
-  },
-  "ICP": {
-    "fast_ema": 300,
-    "slow_ema": 500
-  },
-  "LINK": {
-    "fast_ema": 300,
-    "slow_ema": 500
-  },
-  "LTC": {
-    "fast_ema": 700,
+  "BTC": {
+    "fast_ema": 500,
     "slow_ema": 1100
   },
-  "MNT": {
+  "CHZ": {
     "fast_ema": 10,
     "slow_ema": 400
   },
-  "NEAR": {
-    "fast_ema": 600,
-    "slow_ema": 900
+  "COMP": {
+    "fast_ema": 10,
+    "slow_ema": 300
   },
-  "ONDO": {
-    "fast_ema": 800,
-    "slow_ema": 1000
-  },
-  "PEPE": {
-    "fast_ema": 500,
-    "slow_ema": 700
-  },
-  "POL": {
+  "CRV": {
     "fast_ema": 1000,
-    "slow_ema": 2000
+    "slow_ema": 1600
   },
-  "QNT": {
+  "DOGE": {
+    "fast_ema": 20,
+    "slow_ema": 50
+  },
+  "DOT": {
+    "fast_ema": 20,
+    "slow_ema": 600
+  },
+  "DYDX": {
     "fast_ema": 700,
-    "slow_ema": 1700
+    "slow_ema": 1300
   },
-  "SHIB": {
-    "fast_ema": 1000,
-    "slow_ema": 2000
-  },
-  "SOL": {
-    "fast_ema": 600,
-    "slow_ema": 900
-  },
-  "SUI": {
-    "fast_ema": 1000,
-    "slow_ema": 1200
-  },
-  "TAO": {
-    "fast_ema": 50,
-    "slow_ema": 100
-  },
-  "TRX": {
-    "fast_ema": 600,
+  "EGLD": {
+    "fast_ema": 200,
     "slow_ema": 1100
   },
-  "UNI": {
-    "fast_ema": 200,
+  "ETC": {
+    "fast_ema": 10,
+    "slow_ema": 20
+  },
+  "ETH": {
+    "fast_ema": 20,
+    "slow_ema": 50
+  },
+  "FIL": {
+    "fast_ema": 1000,
     "slow_ema": 2000
   },
-  "XLM": {
+  "FLOW": {
+    "fast_ema": 20,
+    "slow_ema": 1600
+  },
+  "GMX": {
+    "fast_ema": 100,
+    "slow_ema": 150
+  },
+  "ICP": {
+    "fast_ema": 500,
+    "slow_ema": 800
+  },
+  "IMX": {
     "fast_ema": 200,
     "slow_ema": 1900
   },
-  "XMR": {
-    "fast_ema": 700,
+  "INJ": {
+    "fast_ema": 1000,
+    "slow_ema": 1800
+  },
+  "KSM": {
+    "fast_ema": 20,
+    "slow_ema": 50
+  },
+  "LDO": {
+    "fast_ema": 1000,
     "slow_ema": 2000
   },
+  "LINK": {
+    "fast_ema": 20,
+    "slow_ema": 50
+  },
+  "LTC": {
+    "fast_ema": 20,
+    "slow_ema": 100
+  },
+  "MANA": {
+    "fast_ema": 20,
+    "slow_ema": 1900
+  },
+  "NEAR": {
+    "fast_ema": 20,
+    "slow_ema": 800
+  },
+  "OP": {
+    "fast_ema": 600,
+    "slow_ema": 1700
+  },
+  "QNT": {
+    "fast_ema": 600,
+    "slow_ema": 1900
+  },
+  "RUNE": {
+    "fast_ema": 1000,
+    "slow_ema": 1800
+  },
+  "SAND": {
+    "fast_ema": 20,
+    "slow_ema": 50
+  },
+  "SEI": {
+    "fast_ema": 20,
+    "slow_ema": 50
+  },
+  "SHIB": {
+    "fast_ema": 20,
+    "slow_ema": 50
+  },
+  "SNX": {
+    "fast_ema": 100,
+    "slow_ema": 150
+  },
+  "SOL": {
+    "fast_ema": 10,
+    "slow_ema": 20
+  },
+  "SUI": {
+    "fast_ema": 400,
+    "slow_ema": 1800
+  },
+  "TRX": {
+    "fast_ema": 5,
+    "slow_ema": 20
+  },
+  "UNI": {
+    "fast_ema": 10,
+    "slow_ema": 20
+  },
+  "XLM": {
+    "fast_ema": 600,
+    "slow_ema": 1300
+  },
+  "XMR": {
+    "fast_ema": 1000,
+    "slow_ema": 1900
+  },
   "XRP": {
-    "fast_ema": 500,
-    "slow_ema": 1100
+    "fast_ema": 800,
+    "slow_ema": 1200
   },
   "ZEC": {
-    "fast_ema": 500,
-    "slow_ema": 1400
+    "fast_ema": 20,
+    "slow_ema": 600
   }
 }
